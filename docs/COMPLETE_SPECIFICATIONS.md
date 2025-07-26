@@ -38,10 +38,10 @@
 ## 🏗️ Arquitectura Técnica
 
 ### Stack Principal
-- **Frontend:** Astro 5.12 (SSG) + Vue Islands + Tailwind 4
+- **Frontend:** Astro 5.12 (SSG) + Vue Islands + TypeScript
+- **Styling:** Tailwind CSS 4 (via @tailwindcss/vite)
 - **Backend:** Strapi Cloud + PostgreSQL
 - **Imágenes:** Cloudinary (25GB gratis)
-- **Styling:** Tailwind CSS 4 (via @tailwindcss/vite)
 - **Deploy:** Netlify (frontend) + Strapi Cloud (backend)
 - **Dominio:** .com.ar o custom domain
 
@@ -304,13 +304,32 @@ PUBLIC_STRAPI_URL=https://tu-proyecto.strapi.cloud
 PUBLIC_WHATSAPP_NUMBER=5491123456789
 ```
 
+### TypeScript Environment Types
+```typescript
+// src/env.d.ts (automático en Astro 5.12+)
+/// <reference types="astro/client" />
+
+interface ImportMetaEnv {
+  readonly STRAPI_URL: string
+  readonly PUBLIC_STRAPI_URL: string
+  readonly PUBLIC_WHATSAPP_NUMBER: string
+  readonly CLOUDINARY_NAME: string
+  readonly CLOUDINARY_KEY: string
+  readonly CLOUDINARY_SECRET: string
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv
+}
+```
+
 ## 📋 Plan de Desarrollo
 
 ### Fase 1: Setup y Base (Semana 1)
 1. **Setup Strapi Cloud** con PostgreSQL
 2. **Configurar Cloudinary** integration
 3. **Crear Content Types** (Products, Categories, Variants)
-4. **Setup Astro 5.12** con Tailwind 4 (via @tailwindcss/vite) + Netlify adapter
+4. **Setup Astro 5.12** con Tailwind 4 (via @tailwindcss/vite)
 5. **Configurar Content Layer** híbrido (SEO + Live)
 
 ### Fase 2: Funcionalidades Core (Semana 2)
