@@ -1,27 +1,93 @@
 ---
 import { getCollection } from "astro:content"
+import '../styles/global.css'
 
 const productos = await getCollection('products-seo')
 ---
 
-<html lang="en">
+<html lang="es">
 	<head>
 		<meta charset="utf-8" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
+		<meta name="description" content="Descubre nuestra colección de productos de calidad. Encuentra lo que necesitas en nuestra tienda online." />
+		<meta name="keywords" content="productos, tienda online, calidad, compras" />
+		<title>Mi Emprendimiento - Productos de Calidad</title>
 	</head>
-	<body>
-		<h1>Productos</h1>
-		<ul>
-			{
-				productos.map(({data: product}) => (
-					<li>
-						<a href={`/productos/${product.slug}`} target="_blank" rel="noopener noreferrer">{product.slug}</a>
-					</li>
-				))
-			}
-		</ul>
+	<body class="bg-gray-50 min-h-screen">
+		<main class="container mx-auto px-4 py-12 max-w-6xl">
+			<!-- Header Section -->
+			<header class="text-center mb-12">
+				<h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+					Nuestros Productos
+				</h1>
+				<p class="text-xl text-gray-600 max-w-2xl mx-auto">
+					Descubre nuestra cuidada selección de productos de calidad
+				</p>
+			</header>
+
+			<!-- Products Grid -->
+			<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+				{
+					productos.map(({data: product}) => (
+						<article class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group border border-gray-100">
+							<a 
+								href={`/productos/${product.slug}`} 
+								class="block h-full"
+								rel="noopener noreferrer"
+							>
+								<!-- Product Image -->
+								<div class="aspect-square overflow-hidden bg-gray-100">
+									{product.image?.formats?.medium?.url ? (
+										<img 
+											src={product.image.formats.medium.url}
+											alt={product.slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+											class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+											loading="lazy"
+										/>
+									) : (
+										<div class="w-full h-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+											<span class="text-white font-bold text-2xl">
+												{product.slug.charAt(0).toUpperCase()}
+											</span>
+										</div>
+									)}
+								</div>
+								
+								<!-- Product Content -->
+								<div class="p-6 space-y-3">
+									<!-- Product Name -->
+									<h2 class="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-300">
+										{product.slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+									</h2>
+									
+									<!-- Call to Action -->
+									<div class="flex items-center text-blue-600 text-sm font-medium group-hover:translate-x-1 transition-transform duration-300">
+										Ver detalles
+										<svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+										</svg>
+									</div>
+								</div>
+							</a>
+						</article>
+					))
+				}
+			</section>
+
+			<!-- Empty State -->
+			{productos.length === 0 && (
+				<div class="text-center py-16">
+					<div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+						<svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+						</svg>
+					</div>
+					<h3 class="text-lg font-medium text-gray-900 mb-2">No hay productos disponibles</h3>
+					<p class="text-gray-500">Pronto agregaremos nuevos productos a nuestra colección.</p>
+				</div>
+			)}
+		</main>
 	</body>
 </html>
