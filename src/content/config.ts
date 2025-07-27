@@ -5,186 +5,299 @@ import type { StrapiProduct, StrapiCategory } from '../lib/strapi-types'
 // ===== SCHEMAS ZOD =====
 
 // Schema para productos transformados (después de strapiLoader)
-// Nota: El strapiLoader hace "flatten" de la estructura Strapi { attributes: T } -> T
+// Basado en la estructura REAL de Strapi v5 con populate=*
 const productSchema = z.object({
   // ID transformado por strapiLoader
   id: z.string(),
   
-  // Campos primitivos (flattened desde attributes)
+  // Campos básicos (estructura real de Strapi v5)
+  documentId: z.string(),
   name: z.string(),
-  slug: z.string(),
   description: z.string(),
+  slug: z.string(),
   base_price: z.number(),
-  sku: z.string(),
-  
-  // Estados (flattened desde attributes)
   featured: z.boolean(),
   active: z.boolean(),
   
-  // Timestamps (flattened desde attributes)
+  // Campos adicionales de Strapi
+  meta_title: z.string().nullable(),
+  age_range: z.string().nullable(),
+  material: z.string().nullable(),
+  
+  // Timestamps
   createdAt: z.string(),
   updatedAt: z.string(),
+  publishedAt: z.string(),
   
-  // Relaciones complejas (conservan estructura original de Strapi)
-  images: z.object({
-    data: z.array(z.object({
-      id: z.number(),
-      attributes: z.object({
-        name: z.string(),
+  // Relaciones populadas (estructura directa en Strapi v5)
+  image: z.object({
+    id: z.number(),
+    documentId: z.string(),
+    name: z.string(),
+    alternativeText: z.string().nullable(),
+    caption: z.string().nullable(),
+    width: z.number(),
+    height: z.number(),
+    formats: z.object({
+      thumbnail: z.object({
+        ext: z.string(),
         url: z.string(),
-        alternativeText: z.string().nullable(),
+        hash: z.string(),
+        mime: z.string(),
+        name: z.string(),
+        path: z.string().nullable(),
+        size: z.number(),
         width: z.number(),
         height: z.number(),
-        formats: z.object({
-          thumbnail: z.object({
-            name: z.string(),
-            url: z.string(),
-            width: z.number(),
-            height: z.number(),
-            size: z.number()
-          }).optional(),
-          small: z.object({
-            name: z.string(),
-            url: z.string(),
-            width: z.number(),
-            height: z.number(),
-            size: z.number()
-          }).optional(),
-          medium: z.object({
-            name: z.string(),
-            url: z.string(),
-            width: z.number(),
-            height: z.number(),
-            size: z.number()
-          }).optional(),
-          large: z.object({
-            name: z.string(),
-            url: z.string(),
-            width: z.number(),
-            height: z.number(),
-            size: z.number()
-          }).optional()
-        }),
-        createdAt: z.string(),
-        updatedAt: z.string()
-      })
-    }))
-  }),
-  
-  categories: z.object({
-    data: z.array(z.object({
-      id: z.number(),
-      attributes: z.object({
+        sizeInBytes: z.number(),
+        provider_metadata: z.object({
+          public_id: z.string(),
+          resource_type: z.string()
+        })
+      }).optional(),
+      small: z.object({
+        ext: z.string(),
+        url: z.string(),
+        hash: z.string(),
+        mime: z.string(),
         name: z.string(),
-        slug: z.string(),
-        description: z.string(),
-        active: z.boolean(),
-        order: z.number(),
-        createdAt: z.string(),
-        updatedAt: z.string()
-      })
-    }))
-  }),
-  
-  variants: z.object({
-    data: z.array(z.object({
-      id: z.number(),
-      attributes: z.object({
+        path: z.string().nullable(),
+        size: z.number(),
+        width: z.number(),
+        height: z.number(),
+        sizeInBytes: z.number(),
+        provider_metadata: z.object({
+          public_id: z.string(),
+          resource_type: z.string()
+        })
+      }).optional(),
+      medium: z.object({
+        ext: z.string(),
+        url: z.string(),
+        hash: z.string(),
+        mime: z.string(),
         name: z.string(),
-        sku: z.string(),
-        size: z.string(),
-        color: z.string(),
-        price: z.number(),
-        stock_quantity: z.number(),
-        low_stock_threshold: z.number(),
-        active: z.boolean(),
-        available: z.boolean(),
-        createdAt: z.string(),
-        updatedAt: z.string()
-      })
-    }))
-  })
+        path: z.string().nullable(),
+        size: z.number(),
+        width: z.number(),
+        height: z.number(),
+        sizeInBytes: z.number(),
+        provider_metadata: z.object({
+          public_id: z.string(),
+          resource_type: z.string()
+        })
+      }).optional(),
+      large: z.object({
+        ext: z.string(),
+        url: z.string(),
+        hash: z.string(),
+        mime: z.string(),
+        name: z.string(),
+        path: z.string().nullable(),
+        size: z.number(),
+        width: z.number(),
+        height: z.number(),
+        sizeInBytes: z.number(),
+        provider_metadata: z.object({
+          public_id: z.string(),
+          resource_type: z.string()
+        })
+      }).optional()
+    }),
+    hash: z.string(),
+    ext: z.string(),
+    mime: z.string(),
+    size: z.number(),
+    url: z.string(),
+    previewUrl: z.string().nullable(),
+    provider: z.string(),
+    provider_metadata: z.object({
+      public_id: z.string(),
+      resource_type: z.string()
+    }),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+    publishedAt: z.string()
+  }).nullable(),
+  
+  categories: z.array(z.object({
+    id: z.number(),
+    documentId: z.string(),
+    name: z.string(),
+    slug: z.string(),
+    description: z.string(),
+    order: z.number(),
+    active: z.boolean(),
+    meta_title: z.string().nullable(),
+    meta_description: z.string().nullable(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+    publishedAt: z.string()
+  })),
+  
+  product_variants: z.array(z.object({
+    id: z.number(),
+    documentId: z.string(),
+    size: z.string(),
+    color: z.string(),
+    material_variant: z.string().nullable(),
+    price: z.number().nullable(),
+    stock_quantity: z.number(),
+    low_stock_threshold: z.number(),
+    weight: z.number().nullable(),
+    active: z.boolean(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+    publishedAt: z.string()
+  })),
+  
+  product_sets: z.array(z.object({
+    id: z.number(),
+    documentId: z.string(),
+    name: z.string(),
+    slug: z.string(),
+    description: z.string(),
+    price: z.number(),
+    active: z.boolean(),
+    meta_title: z.string().nullable(),
+    meta_description: z.string().nullable(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+    publishedAt: z.string()
+  }))
 })
 
 // Schema para categorías transformadas (después de strapiLoader)
-// Nota: El strapiLoader hace "flatten" de la estructura Strapi { attributes: T } -> T
+// Basado en la estructura REAL de Strapi v5
 const categorySchema = z.object({
   // ID transformado por strapiLoader
   id: z.string(),
   
-  // Campos básicos (flattened desde attributes)
+  // Campos básicos (estructura real de Strapi v5)
+  documentId: z.string(),
   name: z.string(),
   slug: z.string(),
   description: z.string(),
-  
-  // Configuración (flattened desde attributes)
-  active: z.boolean(),
   order: z.number(),
+  active: z.boolean(),
   
-  // Timestamps (flattened desde attributes)
+  // Campos adicionales de Strapi
+  meta_title: z.string().nullable(),
+  meta_description: z.string().nullable(),
+  
+  // Timestamps
   createdAt: z.string(),
   updatedAt: z.string(),
+  publishedAt: z.string(),
   
-  // Relaciones
+  // Relaciones (estructura real de Strapi v5)
   image: z.object({
-    data: z.object({
-      id: z.number(),
-      attributes: z.object({
-        name: z.string(),
+    id: z.number(),
+    documentId: z.string(),
+    name: z.string(),
+    alternativeText: z.string().nullable(),
+    caption: z.string().nullable(),
+    width: z.number(),
+    height: z.number(),
+    formats: z.object({
+      thumbnail: z.object({
+        ext: z.string(),
         url: z.string(),
-        alternativeText: z.string().nullable(),
+        hash: z.string(),
+        mime: z.string(),
+        name: z.string(),
+        path: z.string().nullable(),
+        size: z.number(),
         width: z.number(),
         height: z.number(),
-        formats: z.object({
-          thumbnail: z.object({
-            name: z.string(),
-            url: z.string(),
-            width: z.number(),
-            height: z.number(),
-            size: z.number()
-          }).optional(),
-          small: z.object({
-            name: z.string(),
-            url: z.string(),
-            width: z.number(),
-            height: z.number(),
-            size: z.number()
-          }).optional(),
-          medium: z.object({
-            name: z.string(),
-            url: z.string(),
-            width: z.number(),
-            height: z.number(),
-            size: z.number()
-          }).optional(),
-          large: z.object({
-            name: z.string(),
-            url: z.string(),
-            width: z.number(),
-            height: z.number(),
-            size: z.number()
-          }).optional()
-        }),
-        createdAt: z.string(),
-        updatedAt: z.string()
-      })
-    }).nullable()
-  }),
-  
-  parent_category: z.object({
-    data: z.object({
-      id: z.number(),
-      attributes: z.object({
+        sizeInBytes: z.number(),
+        provider_metadata: z.object({
+          public_id: z.string(),
+          resource_type: z.string()
+        })
+      }).optional(),
+      small: z.object({
+        ext: z.string(),
+        url: z.string(),
+        hash: z.string(),
+        mime: z.string(),
         name: z.string(),
-        slug: z.string(),
-        description: z.string(),
-        active: z.boolean(),
-        order: z.number(),
-        createdAt: z.string(),
-        updatedAt: z.string()
-      })
-    }).nullable()
-  })
+        path: z.string().nullable(),
+        size: z.number(),
+        width: z.number(),
+        height: z.number(),
+        sizeInBytes: z.number(),
+        provider_metadata: z.object({
+          public_id: z.string(),
+          resource_type: z.string()
+        })
+      }).optional(),
+      medium: z.object({
+        ext: z.string(),
+        url: z.string(),
+        hash: z.string(),
+        mime: z.string(),
+        name: z.string(),
+        path: z.string().nullable(),
+        size: z.number(),
+        width: z.number(),
+        height: z.number(),
+        sizeInBytes: z.number(),
+        provider_metadata: z.object({
+          public_id: z.string(),
+          resource_type: z.string()
+        })
+      }).optional(),
+      large: z.object({
+        ext: z.string(),
+        url: z.string(),
+        hash: z.string(),
+        mime: z.string(),
+        name: z.string(),
+        path: z.string().nullable(),
+        size: z.number(),
+        width: z.number(),
+        height: z.number(),
+        sizeInBytes: z.number(),
+        provider_metadata: z.object({
+          public_id: z.string(),
+          resource_type: z.string()
+        })
+      }).optional()
+    }),
+    hash: z.string(),
+    ext: z.string(),
+    mime: z.string(),
+    size: z.number(),
+    url: z.string(),
+    previewUrl: z.string().nullable(),
+    provider: z.string(),
+    provider_metadata: z.object({
+      public_id: z.string(),
+      resource_type: z.string()
+    }),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+    publishedAt: z.string()
+  }).nullable(),
+  
+  // Relaciones adicionales encontradas en la respuesta
+  subcategories: z.array(z.unknown()),
+  category: z.unknown().nullable(),
+  product_sets: z.array(z.object({
+    id: z.number(),
+    documentId: z.string(),
+    name: z.string(),
+    slug: z.string(),
+    description: z.string(),
+    price: z.number(),
+    active: z.boolean(),
+    meta_title: z.string().nullable(),
+    meta_description: z.string().nullable(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+    publishedAt: z.string()
+  }))
 })
 
 // ===== CONTENT COLLECTIONS =====

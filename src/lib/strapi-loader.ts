@@ -35,17 +35,18 @@ export function strapiLoader<T>(endpoint: string) {
         throw new Error(`Invalid Strapi response structure for ${url}. Expected { data: [] }, got: ${JSON.stringify(data)}`)
       }
       
-      console.log(`[StrapiLoader] Successfully fetched ${data.data.length} items from ${endpoint}`)
-      
-      // Transformación de datos: Convertir de formato Strapi a formato Content Layer
-      const transformedData = data.data.map((item: StrapiEntity<T>) => {
-        // Input: { id: number, attributes: T }
-        // Output: { id: string, ...attributes }
-        return {
-          id: item.id.toString(), // Convertir ID numérico a string
-          ...item.attributes       // Flatten estructura - spread attributes
-        }
-      })
+        console.log(`[StrapiLoader] Successfully fetched ${data.data.length} items from ${endpoint}`)
+        
+        // Transformación de datos: Convertir de formato Strapi a formato Content Layer
+        // NOTA: Strapi v5 ya NO usa { id, attributes: {...} }, datos vienen directamente
+        const transformedData = data.data.map((item: any) => {
+          // Extraer id separadamente para evitar duplicación
+          const { id, ...rest } = item
+          return {
+            id: id.toString(), // Convertir ID numérico a string
+            ...rest            // Spread el resto de los datos (sin id original)
+          }
+        })
       
       return transformedData
       
