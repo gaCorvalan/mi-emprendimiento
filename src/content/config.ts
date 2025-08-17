@@ -53,7 +53,7 @@ const productSchema = z.object({
         provider_metadata: z.object({
           public_id: z.string(),
           resource_type: z.string()
-        })
+        }).optional()
       }).optional(),
       small: z.object({
         ext: z.string(),
@@ -69,7 +69,7 @@ const productSchema = z.object({
         provider_metadata: z.object({
           public_id: z.string(),
           resource_type: z.string()
-        })
+        }).optional()
       }).optional(),
       medium: z.object({
         ext: z.string(),
@@ -85,7 +85,7 @@ const productSchema = z.object({
         provider_metadata: z.object({
           public_id: z.string(),
           resource_type: z.string()
-        })
+        }).optional()
       }).optional(),
       large: z.object({
         ext: z.string(),
@@ -101,7 +101,7 @@ const productSchema = z.object({
         provider_metadata: z.object({
           public_id: z.string(),
           resource_type: z.string()
-        })
+        }).optional()
       }).optional()
     }),
     hash: z.string(),
@@ -114,7 +114,7 @@ const productSchema = z.object({
     provider_metadata: z.object({
       public_id: z.string(),
       resource_type: z.string()
-    }),
+    }).optional(),
     createdAt: z.string(),
     updatedAt: z.string(),
     publishedAt: z.string()
@@ -126,7 +126,7 @@ const productSchema = z.object({
     name: z.string(),
     slug: z.string(),
     description: z.string(),
-    order: z.number(),
+    order: z.number().nullable(),
     active: z.boolean(),
     meta_title: z.string().nullable(),
     meta_description: z.string().nullable(),
@@ -214,7 +214,7 @@ const categorySchema = z.object({
         provider_metadata: z.object({
           public_id: z.string(),
           resource_type: z.string()
-        })
+        }).optional()
       }).optional(),
       small: z.object({
         ext: z.string(),
@@ -230,7 +230,7 @@ const categorySchema = z.object({
         provider_metadata: z.object({
           public_id: z.string(),
           resource_type: z.string()
-        })
+        }).optional()
       }).optional(),
       medium: z.object({
         ext: z.string(),
@@ -246,7 +246,7 @@ const categorySchema = z.object({
         provider_metadata: z.object({
           public_id: z.string(),
           resource_type: z.string()
-        })
+        }).optional()
       }).optional(),
       large: z.object({
         ext: z.string(),
@@ -262,7 +262,7 @@ const categorySchema = z.object({
         provider_metadata: z.object({
           public_id: z.string(),
           resource_type: z.string()
-        })
+        }).optional()
       }).optional()
     }),
     hash: z.string(),
@@ -275,7 +275,7 @@ const categorySchema = z.object({
     provider_metadata: z.object({
       public_id: z.string(),
       resource_type: z.string()
-    }),
+    }).optional(),
     createdAt: z.string(),
     updatedAt: z.string(),
     publishedAt: z.string()
