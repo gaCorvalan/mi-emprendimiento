@@ -1,6 +1,5 @@
 import { defineCollection, z } from 'astro:content'
 import { strapiLoader } from '../lib/strapi-loader'
-import type { StrapiProduct, StrapiCategory } from '../lib/strapi-types'
 
 // ===== SCHEMAS ZOD =====
 
@@ -125,7 +124,7 @@ const productSchema = z.object({
     documentId: z.string(),
     name: z.string(),
     slug: z.string(),
-    description: z.string(),
+    description: z.string().nullable(),
     order: z.number().nullable(),
     active: z.boolean(),
     meta_title: z.string().nullable(),
@@ -142,10 +141,10 @@ const productSchema = z.object({
     color: z.string(),
     material_variant: z.string().nullable(),
     price: z.number().nullable(),
-    stock_quantity: z.number(),
-    low_stock_threshold: z.number(),
-    weight: z.number().nullable(),
-    active: z.boolean(),
+    stock_quantity: z.number().nullable(),
+    low_stock_threshold: z.number().nullable(),
+    weight: z.string().nullable(),
+    active: z.boolean().nullable(),
     createdAt: z.string(),
     updatedAt: z.string(),
     publishedAt: z.string()
@@ -177,8 +176,8 @@ const categorySchema = z.object({
   documentId: z.string(),
   name: z.string(),
   slug: z.string(),
-  description: z.string(),
-  order: z.number(),
+  description: z.string().nullable(),
+  order: z.number().nullable(),
   active: z.boolean(),
   
   // Campos adicionales de Strapi
@@ -302,16 +301,22 @@ const categorySchema = z.object({
 
 // ===== CONTENT COLLECTIONS =====
 
+/** Producto ya pasado por el loader y validado. Reemplaza los tipos de Strapi v4. */
+export type Product = z.infer<typeof productSchema>
+
+/** Categoría ya pasada por el loader y validada. Reemplaza los tipos de Strapi v4. */
+export type Category = z.infer<typeof categorySchema>
+
 const collections = {
   // Collection estática para productos (SEO y static generation)
   'products-seo': defineCollection({
-    loader: strapiLoader<StrapiProduct>('products'),
+    loader: strapiLoader('products'),
     schema: productSchema
   }),
   
   // Collection estática para categorías (navegación y filtrado)
   categories: defineCollection({
-    loader: strapiLoader<StrapiCategory>('categories'),
+    loader: strapiLoader('categories'),
     schema: categorySchema
   })
 }

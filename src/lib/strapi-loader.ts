@@ -1,65 +1,105 @@
-import type { StrapiResponse, StrapiEntity } from './strapi-types'
+/**
+ * Loader de Content Layer para el catálogo de Strapi 5.
+ * Los tipos de cada entrada salen de los schemas Zod en `src/content/config.ts`.
+ */
+
+const PAGE_SIZE = 25
+
+interface StrapiPagination {
+  page: number
+  pageSize: number
+  pageCount: number
+  total: number
+}
+
+interface StrapiListResponse {
+  data: unknown
+  meta?: {
+    pagination?: StrapiPagination
+  }
+}
+
+function isEntry(value: unknown): value is { id: number | string } & Record<string, unknown> {
+  if (typeof value !== 'object' || value === null) return false
+  const id = (value as { id?: unknown }).id
+  return typeof id === 'number' || typeof id === 'string'
+}
 
 /**
- * Función helper reutilizable para crear loaders de Content Layer que se conecten a Strapi
- * @param endpoint - Endpoint de Strapi (ej: 'products', 'categories')
- * @returns Loader object compatible con Content Layer API
+ * Trae todas las páginas de un content-type. Strapi corta en 25 si no se pide
+ * la página siguiente, así que un catálogo más grande se perdería en el build.
  */
-export function strapiLoader<T>(endpoint: string) {
-  // Función inline loader compatible con Content Layer API
+export function strapiLoader(endpoint: string) {
   return async () => {
+    const baseUrl = (import.meta.env.STRAPI_URL || 'http://localhost:1337').replace(/\/$/, '')
+    const items: Array<Record<string, unknown> & { id: string }> = []
+    let page = 1
+    let pageCount = 1
+    let total = 0
+
     try {
-      // Construir URL con base + endpoint + populate automático
-      const baseUrl = import.meta.env.STRAPI_URL || 'http://localhost:1337'
-      const url = `${baseUrl}/api/${endpoint}?populate=*`
-      
-      console.log(`[StrapiLoader] Fetching: ${url}`)
-      
-      // Fetch automático con error handling
-      const response = await fetch(url)
-      
-      if (!response.ok) {
-        throw new Error(`HTTP Error: ${response.status} ${response.statusText} for ${url}`)
-      }
-      
-      // Parse JSON con error handling
-      let data: StrapiResponse<T>
-      try {
-        data = await response.json()
-      } catch (parseError) {
-        throw new Error(`JSON Parse Error for ${url}: ${parseError}`)
-      }
-      
-      // Verificar estructura de datos de Strapi
-      if (!data.data || !Array.isArray(data.data)) {
-        throw new Error(`Invalid Strapi response structure for ${url}. Expected { data: [] }, got: ${JSON.stringify(data)}`)
-      }
-      
-        console.log(`[StrapiLoader] Successfully fetched ${data.data.length} items from ${endpoint}`)
-        
-        // Transformación de datos: Convertir de formato Strapi a formato Content Layer
-        // NOTA: Strapi v5 ya NO usa { id, attributes: {...} }, datos vienen directamente
-        const transformedData = data.data.map((item: any) => {
-          // Extraer id separadamente para evitar duplicación
-          const { id, ...rest } = item
-          return {
-            id: id.toString(), // Convertir ID numérico a string
-            ...rest            // Spread el resto de los datos (sin id original)
-          }
+      do {
+        const params = new URLSearchParams({
+          populate: '*',
+          'pagination[page]': String(page),
+          'pagination[pageSize]': String(PAGE_SIZE),
         })
-      
-      return transformedData
-      
+        const url = `${baseUrl}/api/${endpoint}?${params}`
+
+        console.log(`[StrapiLoader] Fetching: ${url}`)
+
+        const response = await fetch(url)
+
+        if (!response.ok) {
+          throw new Error(`HTTP Error: ${response.status} ${response.statusText} for ${url}`)
+        }
+
+        let data: StrapiListResponse
+        try {
+          data = await response.json()
+        } catch (parseError) {
+          throw new Error(`JSON Parse Error for ${url}: ${parseError}`)
+        }
+
+        if (!data.data || !Array.isArray(data.data)) {
+          throw new Error(`Invalid Strapi response structure for ${url}. Expected { data: [] }, got: ${JSON.stringify(data)}`)
+        }
+
+        const pagination = data.meta?.pagination
+        if (!pagination || typeof pagination.pageCount !== 'number' || typeof pagination.total !== 'number') {
+          throw new Error(`Invalid Strapi response for ${url}. Expected meta.pagination so the full catalog can be loaded.`)
+        }
+
+        for (const item of data.data) {
+          if (!isEntry(item)) {
+            throw new Error(`Invalid Strapi entry in ${url}: missing id`)
+          }
+          const { id, ...rest } = item
+          items.push({
+            id: String(id),
+            ...rest,
+          })
+        }
+
+        pageCount = pagination.pageCount
+        total = pagination.total
+        page += 1
+      } while (page <= pageCount)
+
+      if (items.length !== total) {
+        throw new Error(`Incomplete catalog for ${endpoint}: expected ${total} items, got ${items.length}`)
+      }
+
+      console.log(`[StrapiLoader] Successfully fetched ${items.length} items from ${endpoint} (${pageCount} page${pageCount === 1 ? '' : 's'})`)
+
+      return items
     } catch (error) {
-      // Error handling comprehensivo con logging descriptivo
       console.error(`[StrapiLoader] Error loading ${endpoint}:`, error)
-      
-      // Re-throw con contexto adicional para debugging
+
       if (error instanceof Error) {
         throw new Error(`Failed to load ${endpoint} from Strapi: ${error.message}`)
-      } else {
-        throw new Error(`Failed to load ${endpoint} from Strapi: Unknown error`)
       }
+      throw new Error(`Failed to load ${endpoint} from Strapi: Unknown error`)
     }
   }
-} 
+}
