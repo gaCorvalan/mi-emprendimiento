@@ -42,14 +42,14 @@ const productos = await getCollection('products-seo')
 									{product.image?.formats?.medium?.url ? (
 										<img 
 											src={product.image.formats.medium.url}
-											alt={product.slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+											alt={product.name}
 											class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
 											loading="lazy"
 										/>
 									) : (
 										<div class="w-full h-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
 											<span class="text-white font-bold text-2xl">
-												{product.slug.charAt(0).toUpperCase()}
+												{product.name.charAt(0).toUpperCase()}
 											</span>
 										</div>
 									)}
@@ -59,7 +59,7 @@ const productos = await getCollection('products-seo')
 								<div class="p-6 space-y-3">
 									<!-- Product Name -->
 									<h2 class="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-300">
-										{product.slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+										{product.name}
 									</h2>
 									
 									<!-- Call to Action -->
