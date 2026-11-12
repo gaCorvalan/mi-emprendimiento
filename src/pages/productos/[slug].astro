@@ -16,10 +16,27 @@ export async function getStaticPaths() {
 }
 
 const { product } = Astro.props
-const { slug } = Astro.params
 
-// Construir URL de imagen completa - ajustar según la estructura de tu producto
-const imageUrl = product.image?.formats.large?.url
+const imageUrl =
+  product.image?.formats?.large?.url
+  ?? product.image?.formats?.medium?.url
+  ?? product.image?.formats?.small?.url
+  ?? product.image?.url
+
+const jsonLd = {
+  '@context': 'https://schema.org/',
+  '@type': 'Product',
+  name: product.name,
+  ...(imageUrl ? { image: imageUrl } : {}),
+  description: product.description || product.name,
+  offers: {
+    '@type': 'Offer',
+    url: Astro.url.href,
+    priceCurrency: 'ARS',
+    price: product.base_price,
+    availability: 'https://schema.org/InStock',
+  },
+}
 ---
 
 <!DOCTYPE html>
@@ -34,13 +51,13 @@ const imageUrl = product.image?.formats.large?.url
   <meta property="og:type" content="product">
   <meta property="og:title" content={`${product.name} - Mi Tienda`}>
   <meta property="og:description" content={product.description || `Descubre ${product.name} en nuestra tienda`}>
-  <meta property="og:image" content={imageUrl}>
+  {imageUrl && <meta property="og:image" content={imageUrl} />}
   
   <!-- Twitter -->
-  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:card" content={imageUrl ? 'summary_large_image' : 'summary'}>
   <meta name="twitter:title" content={`${product.name} - Mi Tienda`}>
   <meta name="twitter:description" content={product.description || `Descubre ${product.name} en nuestra tienda`}>
-  <meta name="twitter:image" content={imageUrl}>
+  {imageUrl && <meta name="twitter:image" content={imageUrl} />}
   
   <title>{product.name} - Mi Tienda</title>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -87,12 +104,20 @@ const imageUrl = product.image?.formats.large?.url
     <section class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
       <!-- Product Image -->
       <div class="aspect-square">
-        <img 
-          src={imageUrl}
-          alt={`Imagen del producto ${product.name}`}
-          class="w-full h-full object-cover rounded-lg shadow-lg bg-white"
-          loading="eager"
-        />
+        {imageUrl ? (
+          <img 
+            src={imageUrl}
+            alt={`Imagen del producto ${product.name}`}
+            class="w-full h-full object-cover rounded-lg shadow-lg bg-white"
+            loading="eager"
+          />
+        ) : (
+          <div class="w-full h-full rounded-lg shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+            <span class="text-white font-bold text-6xl">
+              {product.name.charAt(0).toUpperCase()}
+            </span>
+          </div>
+        )}
       </div>
 
       <!-- Product Information -->
@@ -184,21 +209,6 @@ const imageUrl = product.image?.formats.large?.url
   </main>
 
   <!-- Structured Data for SEO -->
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org/",
-      "@type": "Product",
-      "name": "{product.name}",
-      "image": "{imageUrl}",
-      "description": "{product.description || product.name}",
-      "offers": {
-        "@type": "Offer",
-        "url": "{Astro.url.href}",
-        "priceCurrency": "ARS",
-        "price": "{product.base_price}",
-        "availability": "https://schema.org/InStock"
-      }
-    }
-  </script>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')} />
 </body>
 </html>
