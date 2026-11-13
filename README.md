@@ -1,6 +1,6 @@
 # Mini Gonzi — tienda
 
-Esta app es la vidriera de Mini Gonzi (ropa de bebé). Es un sitio estático hecho con Astro 5: al armar el sitio lee el catálogo del CMS y deja las páginas listas. No hay servidor de la tienda en producción; el visitante recibe HTML.
+Esta app es la vidriera de Mini Gonzi (ropa de bebé). Es un sitio estático hecho con Astro 7: al armar el sitio lee el catálogo del CMS y deja las páginas listas. No hay servidor de la tienda en producción; el visitante recibe HTML.
 
 El CMS es otro proyecto, [gonzi-store-cms](https://github.com/gaCorvalan/gonzi-store-cms) (Strapi 5). Ahí se cargan los productos y las categorías. Esta tienda no escribe en el CMS: solo lo lee cuando hacés `npm run dev` o `npm run build`.
 
@@ -15,7 +15,7 @@ Strapi manda de a 25. El loader sigue de página en página hasta bajar el catá
 
 ## Qué necesitás
 
-- Node.js 22. El archivo `.nvmrc` fija esa versión. El campo `engines` acepta de 18 a 22, igual que el CMS; en este proyecto usamos 22.
+- Node.js 22.23.4 o más nuevo. Astro 7 lo exige. El archivo `.nvmrc` fija `22.23.4`.
 - npm, el que viene con esa versión de Node.
 - El CMS corriendo y alcanzable en `STRAPI_URL`. Sin eso el build falla, porque no hay catálogo de respaldo en el repo.
 

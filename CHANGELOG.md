@@ -2,6 +2,7 @@
 
 ## 2026-11-13
 
+- Astro pasa a 7.4.11 (Node 22.23.4), la config de contenido queda en `src/content.config.ts` y la ficha deja de pedir Tailwind por el CDN.
 - El build acepta provider_metadata nulo del proveedor local, y las fotos con ruta relativa quedan con la URL absoluta del CMS.
 
 ## 2026-11-12

@@ -1,5 +1,6 @@
-import { defineCollection, z } from 'astro:content'
-import { strapiLoader } from '../lib/strapi-loader'
+import { defineCollection } from 'astro:content'
+import { z } from 'astro/zod'
+import { strapiLoader } from './lib/strapi-loader'
 
 // ===== SCHEMAS ZOD =====
 
