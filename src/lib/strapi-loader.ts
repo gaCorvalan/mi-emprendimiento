@@ -26,6 +26,35 @@ function isEntry(value: unknown): value is { id: number | string } & Record<stri
 }
 
 /**
+ * El proveedor local devuelve `/uploads/...`. Cloudinary ya manda https.
+ * Una ruta relativa en el HTML apunta al host de Astro, no al CMS.
+ */
+export function absoluteMediaUrl(url: string, strapiUrl: string): string {
+  if (url.startsWith('/') && !url.startsWith('//')) {
+    return `${strapiUrl}${url}`
+  }
+  return url
+}
+
+function prefixRelativeMedia(entry: Record<string, unknown>, strapiUrl: string) {
+  const image = entry.image
+  if (!image || typeof image !== 'object') return
+  const media = image as Record<string, unknown>
+  if (typeof media.url === 'string') {
+    media.url = absoluteMediaUrl(media.url, strapiUrl)
+  }
+  const formats = media.formats
+  if (!formats || typeof formats !== 'object') return
+  for (const format of Object.values(formats as Record<string, unknown>)) {
+    if (!format || typeof format !== 'object') continue
+    const file = format as Record<string, unknown>
+    if (typeof file.url === 'string') {
+      file.url = absoluteMediaUrl(file.url, strapiUrl)
+    }
+  }
+}
+
+/**
  * Trae todas las páginas de un content-type. Strapi corta en 25 si no se pide
  * la página siguiente, así que un catálogo más grande se perdería en el build.
  */
@@ -75,6 +104,7 @@ export function strapiLoader(endpoint: string) {
             throw new Error(`Invalid Strapi entry in ${url}: missing id`)
           }
           const { id, ...rest } = item
+          prefixRelativeMedia(rest, baseUrl)
           items.push({
             id: String(id),
             ...rest,
