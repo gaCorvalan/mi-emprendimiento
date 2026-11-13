@@ -1,6 +1,6 @@
 /**
  * Loader de Content Layer para el catálogo de Strapi 5.
- * Los tipos de cada entrada salen de los schemas Zod en `src/content/config.ts`.
+ * Los tipos de cada entrada salen de los schemas Zod en `src/content.config.ts`.
  */
 
 const PAGE_SIZE = 25
