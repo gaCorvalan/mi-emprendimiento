@@ -70,9 +70,9 @@ SITE_URL=https://minigonzi.com.ar npm run build
 
 ## Qué anda hoy
 
-- El inicio lista los productos publicados, con el nombre que cargaste en el CMS.
+- El inicio es el catálogo: grilla de dos columnas, nombre, precio y etiqueta de stock (pieza única, última unidad o sin stock). Si hay más de 24 prendas, sigue en `/pagina/2`.
 - Cada producto tiene su ficha en `/productos/[slug]`: nombre, precio, descripción y datos para buscadores (JSON-LD).
-- Si un producto no tiene imagen, la tarjeta y la ficha muestran un recuadro con la inicial. No se publica `og:image` vacío ni un `img` sin `src`.
+- Si un producto no tiene imagen, la tarjeta muestra un recuadro plano y la ficha un recuadro con la inicial. No se publica `og:image` vacío ni un `img` sin `src`.
 - El build baja productos, categorías y la Tienda.
 - El encabezado muestra el nombre de la Tienda. El texto de envío de la ficha sale de ahí (por defecto, «A coordinar»).
 - `npm test` cubre el stock y el precio en pesos (`src/lib/stock.ts`). La vidriera todavía no elige talle ni color.
@@ -81,4 +81,4 @@ SITE_URL=https://minigonzi.com.ar npm run build
 
 - El botón Comprar no hace nada. No hay carrito ni mensaje de WhatsApp.
 - No hay página de categoría, listado aparte, búsqueda ni filtros. Las categorías se bajan en el build, pero la tienda todavía no las muestra.
-- No se elige talle ni color, y no se muestra el stock ni las promos.
+- No se elige talle ni color, y no se muestran las promos. El catálogo sí muestra si es pieza única, última unidad o sin stock.

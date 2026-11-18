@@ -32,10 +32,18 @@ const nombreTienda = tienda?.nombre.trim() || 'Tienda'
       Saltar al contenido principal
     </a>
     <header class="border-b border-borde bg-superficie">
-      <div class="contenedor flex min-h-comodo items-center">
+      <div class="contenedor flex min-h-comodo items-center justify-between">
         <a href="/" class="texto-titulo inline-flex min-h-minimo items-center text-texto no-underline">
           {nombreTienda}
         </a>
+        <button type="button" class="inline-flex size-minimo shrink-0 items-center justify-center text-texto" aria-label="Carrito">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6 6H21L19.6 15H7.2L6 6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+            <path d="M9 21.3C9.71797 21.3 10.3 20.718 10.3 20C10.3 19.282 9.71797 18.7 9 18.7C8.28203 18.7 7.7 19.282 7.7 20C7.7 20.718 8.28203 21.3 9 21.3Z" fill="currentColor"></path>
+            <path d="M18 21.3C18.718 21.3 19.3 20.718 19.3 20C19.3 19.282 18.718 18.7 18 18.7C17.282 18.7 16.7 19.282 16.7 20C16.7 20.718 17.282 21.3 18 21.3Z" fill="currentColor"></path>
+            <path d="M6 6L5 3H2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+          </svg>
+        </button>
       </div>
     </header>
     <main id="main-content" class="contenedor">

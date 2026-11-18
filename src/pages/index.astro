@@ -1,80 +1,20 @@
 ---
-import { getCollection } from "astro:content"
+import { getCollection } from 'astro:content'
 import Base from '../layouts/Base.astro'
+import Catalogo from '../components/Catalogo.astro'
+import { pageSlice } from '../lib/catalog'
 
 const productos = await getCollection('products-seo')
+const slice = pageSlice(productos, 1)
+const nombre = (await getCollection('tienda'))[0]?.data.nombre.trim() || 'Tienda'
 ---
 
-<Base
-  title="Productos de Calidad"
-  description="Descubre nuestra colección de productos de calidad. Encuentra lo que necesitas en nuestra tienda online."
->
-  <meta slot="head" name="keywords" content="productos, tienda online, calidad, compras" />
-
-  <div class="py-12">
-    <header class="text-center mb-12">
-      <h1 class="text-4xl md:text-5xl font-semibold text-texto mb-4">
-        Nuestros Productos
-      </h1>
-      <p class="text-xl text-texto-secundario max-w-2xl mx-auto">
-        Descubre nuestra cuidada selección de productos de calidad
-      </p>
-    </header>
-
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {
-        productos.map(({data: product}) => (
-          <article class="bg-superficie rounded-medio shadow-1 overflow-hidden group border border-borde">
-            <a
-              href={`/productos/${product.slug}`}
-              class="block h-full"
-              rel="noopener noreferrer"
-            >
-              <div class="aspect-square overflow-hidden bg-superficie-hundida">
-                {product.image?.formats?.medium?.url ? (
-                  <img
-                    src={product.image.formats.medium.url}
-                    alt={product.name}
-                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div class="w-full h-full bg-acento text-acento-texto flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                    <span class="font-semibold text-2xl">
-                      {product.name.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <div class="p-6 space-y-3">
-                <h2 class="text-lg font-semibold text-texto group-hover:text-acento transition-colors duration-300">
-                  {product.name}
-                </h2>
-
-                <div class="flex items-center text-acento text-sm font-medium group-hover:translate-x-1 transition-transform duration-300">
-                  Ver detalles
-                  <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                  </svg>
-                </div>
-              </div>
-            </a>
-          </article>
-        ))
-      }
-    </section>
-
-    {productos.length === 0 && (
-      <div class="text-center py-16">
-        <div class="w-16 h-16 bg-superficie-hundida rounded-pastilla flex items-center justify-center mx-auto mb-4">
-          <svg class="w-8 h-8 text-texto-secundario" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-          </svg>
-        </div>
-        <h3 class="text-lg font-semibold text-texto mb-2">No hay productos disponibles</h3>
-        <p class="text-texto-secundario">Pronto agregaremos nuevos productos a nuestra colección.</p>
-      </div>
-    )}
-  </div>
+<Base title={nombre} description={`Catálogo de ${nombre}.`}>
+  <Catalogo
+    products={slice.data.map((entry) => entry.data)}
+    shown={slice.shown}
+    total={slice.total}
+    currentPage={slice.currentPage}
+    lastPage={slice.lastPage}
+  />
 </Base>
