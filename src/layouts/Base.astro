@@ -1,0 +1,44 @@
+---
+import '../styles/global.css'
+
+interface Props {
+  title: string
+  description?: string
+}
+
+const { title, description } = Astro.props
+
+// Texto fijo. El próximo PR lo reemplaza por el nombre de la Tienda del CMS.
+const nombreTienda = 'Mini Gonzi'
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    {description && <meta name="description" content={description} />}
+    <title>{title}</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <slot name="head" />
+  </head>
+  <body class="min-h-screen bg-fondo text-texto font-texto antialiased">
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 rounded-chico bg-acento px-4 py-2 text-acento-texto"
+    >
+      Saltar al contenido principal
+    </a>
+    <header class="border-b border-borde bg-superficie">
+      <div class="contenedor flex min-h-comodo items-center">
+        <a href="/" class="texto-titulo inline-flex min-h-minimo items-center text-texto no-underline">
+          {nombreTienda}
+        </a>
+      </div>
+    </header>
+    <main id="main-content" class="contenedor">
+      <slot />
+    </main>
+  </body>
+</html>
