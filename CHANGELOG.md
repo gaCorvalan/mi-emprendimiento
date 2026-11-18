@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-18
+
+- La base visual (colores, tipo, radios y sombras) queda en tokens, con un layout común y el nombre de la tienda.
+
 ## 2026-11-13
 
 - Astro pasa a 7.4.11 (Node 22.23.4), la config de contenido queda en `src/content.config.ts` y la ficha deja de pedir Tailwind por el CDN.

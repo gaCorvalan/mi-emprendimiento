@@ -1,10 +1,10 @@
 ---
 import { getCollection } from 'astro:content';
-import '../../styles/global.css'
+import Base from '../../layouts/Base.astro';
 
 export async function getStaticPaths() {
     const products = getCollection('products-seo')
-    
+
     return (await products).map(({data: product}) => ({
         params: {
             slug: product.slug
@@ -23,6 +23,8 @@ const imageUrl =
   ?? product.image?.formats?.small?.url
   ?? product.image?.url
 
+const description = `${product.name} - ${product.description || 'Producto de calidad en nuestra tienda'}`
+
 const jsonLd = {
   '@context': 'https://schema.org/',
   '@type': 'Product',
@@ -39,175 +41,106 @@ const jsonLd = {
 }
 ---
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content={`${product.name} - ${product.description || 'Producto de calidad en nuestra tienda'}`}>
-  <meta name="keywords" content={`${product.name}, producto, tienda, ecommerce`}>
-  
-  <!-- Open Graph / Facebook -->
-  <meta property="og:type" content="product">
-  <meta property="og:title" content={`${product.name} - Mi Tienda`}>
-  <meta property="og:description" content={product.description || `Descubre ${product.name} en nuestra tienda`}>
-  {imageUrl && <meta property="og:image" content={imageUrl} />}
-  
-  <!-- Twitter -->
-  <meta name="twitter:card" content={imageUrl ? 'summary_large_image' : 'summary'}>
-  <meta name="twitter:title" content={`${product.name} - Mi Tienda`}>
-  <meta name="twitter:description" content={product.description || `Descubre ${product.name} en nuestra tienda`}>
-  {imageUrl && <meta name="twitter:image" content={imageUrl} />}
-  
-  <title>{product.name} - Mi Tienda</title>
-  <style>
-    /* Custom focus styles for better accessibility */
-    .focus-ring:focus {
-      outline: 2px solid #3b82f6;
-      outline-offset: 2px;
-    }
-    
-    /* Smooth transitions */
-    .transition-all {
-      transition: all 0.3s ease;
-    }
-  </style>
-</head>
+<Base title={`${product.name} - Mi Tienda`} description={description}>
+  <Fragment slot="head">
+    <meta name="keywords" content={`${product.name}, producto, tienda, ecommerce`} />
+    <meta property="og:type" content="product" />
+    <meta property="og:title" content={`${product.name} - Mi Tienda`} />
+    <meta property="og:description" content={product.description || `Descubre ${product.name} en nuestra tienda`} />
+    {imageUrl && <meta property="og:image" content={imageUrl} />}
+    <meta name="twitter:card" content={imageUrl ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:title" content={`${product.name} - Mi Tienda`} />
+    <meta name="twitter:description" content={product.description || `Descubre ${product.name} en nuestra tienda`} />
+    {imageUrl && <meta name="twitter:image" content={imageUrl} />}
+  </Fragment>
 
-<body class="bg-gray-50 font-sans antialiased">
-  <!-- Skip to main content for accessibility -->
-  <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-blue-600 text-white px-4 py-2 rounded-md z-50">
-    Saltar al contenido principal
-  </a>
-
-  <!-- Header/Navigation -->
-
-  <!-- Main Content -->
-  <main id="main-content" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Breadcrumb -->
+  <div class="py-8">
     <nav aria-label="Breadcrumb" class="mb-8">
-      <ol class="flex items-center space-x-2 text-sm text-gray-500">
+      <ol class="flex items-center space-x-2 text-sm text-texto-secundario">
         <li>
-          <a href="/" class="hover:text-gray-700 focus-ring rounded-md px-1 transition-all">Inicio</a>
+          <a href="/" class="hover:text-texto rounded-chico px-1">Inicio</a>
         </li>
         <li class="flex items-center">
           <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
           </svg>
-          <span class="font-medium text-gray-900">{product.name}</span>
+          <span class="font-medium text-texto">{product.name}</span>
         </li>
       </ol>
     </nav>
 
-    <!-- Product Section -->
     <section class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-      <!-- Product Image -->
       <div class="aspect-square">
         {imageUrl ? (
-          <img 
+          <img
             src={imageUrl}
             alt={`Imagen del producto ${product.name}`}
-            class="w-full h-full object-cover rounded-lg shadow-lg bg-white"
+            class="w-full h-full object-cover rounded-medio shadow-1 bg-superficie"
             loading="eager"
           />
         ) : (
-          <div class="w-full h-full rounded-lg shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-            <span class="text-white font-bold text-6xl">
+          <div class="w-full h-full rounded-medio shadow-1 bg-acento text-acento-texto flex items-center justify-center">
+            <span class="font-semibold text-6xl">
               {product.name.charAt(0).toUpperCase()}
             </span>
           </div>
         )}
       </div>
 
-      <!-- Product Information -->
       <div class="flex flex-col justify-start space-y-6">
-        <!-- Product Title -->
         <header>
-          <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">
+          <h1 class="text-3xl sm:text-4xl font-semibold text-texto leading-tight">
             {product.name}
           </h1>
         </header>
 
-        <!-- Price -->
         <div class="flex items-center space-x-4">
-          <span class="text-3xl font-bold text-gray-900">
+          <span class="text-3xl font-semibold text-texto tabular-nums">
             ${product.base_price?.toLocaleString('es-AR') || 'Precio no disponible'}
           </span>
-          <span class="text-sm text-gray-500 bg-green-100 text-green-800 px-2 py-1 rounded-full">
+          <span class="texto-etiqueta bg-exito-fondo text-exito px-2 py-1 rounded-pastilla">
             Precio final
           </span>
         </div>
 
-        <!-- Product Description -->
         {product.description && (
-          <div class="prose prose-gray max-w-none">
-            <h2 class="text-xl font-semibold text-gray-900 mb-3">Descripción</h2>
-            <p class="text-gray-700 leading-relaxed">
+          <div class="max-w-none">
+            <h2 class="text-xl font-semibold text-texto mb-3">Descripción</h2>
+            <p class="texto-cuerpo text-texto">
               {product.description}
             </p>
           </div>
         )}
 
-        <!-- Product Details -->
-        <div class="bg-gray-100 rounded-lg p-6 space-y-4">
-          <h2 class="text-lg font-semibold text-gray-900">Detalles del producto</h2>
+        <div class="bg-superficie-hundida rounded-medio p-6 space-y-4">
+          <h2 class="text-lg font-semibold text-texto">Detalles del producto</h2>
           <dl class="grid grid-cols-1 gap-3 text-sm">
             <div class="flex justify-between">
-              <dt class="font-medium text-gray-600">SKU:</dt>
-              <dd class="text-gray-900">{product.slug}</dd>
+              <dt class="font-medium text-texto-secundario">SKU:</dt>
+              <dd class="text-texto">{product.slug}</dd>
             </div>
             <div class="flex justify-between">
-              <dt class="font-medium text-gray-600">Disponibilidad:</dt>
-              <dd class="text-green-600 font-medium">En stock</dd>
+              <dt class="font-medium text-texto-secundario">Disponibilidad:</dt>
+              <dd class="text-exito font-medium">En stock</dd>
             </div>
           </dl>
         </div>
 
-        <!-- Call to Action -->
         <div class="space-y-4 pt-6">
-          <button 
+          <button
             type="button"
-            class="w-full bg-blue-600 hover:bg-blue-700 focus:bg-blue-700 focus-ring text-white font-semibold py-4 px-6 rounded-lg transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+            class="w-full min-h-cta bg-acento text-acento-texto font-semibold py-4 px-6 rounded-medio"
             aria-describedby="add-to-cart-description"
           >
             Comprar
           </button>
-          <p id="add-to-cart-description" class="text-sm text-gray-600 text-center">
+          <p id="add-to-cart-description" class="texto-cuerpo text-texto-secundario text-center">
             Envío gratis en compras mayores a $50.000
           </p>
         </div>
-
-        <!-- Additional Information -->
-        <!-- <div class="border-t pt-6 space-y-4">
-          <details class="group">
-            <summary class="flex justify-between items-center cursor-pointer py-2 text-gray-900 font-medium focus-ring rounded-md">
-              <span>Información de envío</span>
-              <svg class="w-5 h-5 transform group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-              </svg>
-            </summary>
-            <div class="mt-2 text-gray-600 text-sm leading-relaxed">
-              <p>Enviamos a todo el país. Tiempo de entrega: 3-7 días hábiles.</p>
-            </div>
-          </details>
-
-          <details class="group">
-            <summary class="flex justify-between items-center cursor-pointer py-2 text-gray-900 font-medium focus-ring rounded-md">
-              <span>Política de devoluciones</span>
-              <svg class="w-5 h-5 transform group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-              </svg>
-            </summary>
-            <div class="mt-2 text-gray-600 text-sm leading-relaxed">
-              <p>Aceptamos devoluciones hasta 30 días después de la compra.</p>
-            </div>
-          </details>
-        </div> -->
       </div>
     </section>
-  </main>
+  </div>
 
-  <!-- Structured Data for SEO -->
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')} />
-</body>
-</html>
+</Base>
