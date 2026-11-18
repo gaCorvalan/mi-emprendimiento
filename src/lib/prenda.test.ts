@@ -17,6 +17,7 @@ import {
   quedaUnoTexto,
   showChooseHint,
   sizeChoices,
+  stepperMuted,
   type PrendaProduct,
   type PrendaVariant,
   type Selection,
@@ -194,8 +195,9 @@ describe('botón de agregar', () => {
   it('la pieza única no se confunde con última unidad y se puede agregar', () => {
     const selection = initialSelection(bordado)
     assert.equal(cardView(bordado).label, 'PIEZA ÚNICA')
-    assert.equal(quedaUnoTexto(bordado, selection), 'Queda 1')
+    assert.equal(quedaUnoTexto(bordado, selection), null)
     assert.equal(quantityCap(bordado, selection), 1)
+    assert.equal(stepperMuted(bordado), false)
     assert.equal(canAdd(bordado, selection), true)
     assert.equal(addButtonLabel(bordado), 'Agregar al carrito')
     assert.equal(priceText(bordado, selection), formatArs(32000))
@@ -209,6 +211,8 @@ describe('botón de agregar', () => {
     assert.equal(priceMuted(manta, initialSelection(manta)), true)
     assert.equal(priceText(manta, initialSelection(manta)), formatArs(24000))
     assert.equal(addToCartDetail(manta, { size: '0-3 m', color: 'Gris' }, 1), null)
+    assert.equal(stepperMuted(manta), true)
+    assert.equal(quedaUnoTexto(manta, { size: '0-3 m', color: 'Gris' }), null)
   })
 
   it('una pieza única sin unidades también queda sin stock en el botón', () => {
@@ -224,5 +228,7 @@ describe('botón de agregar', () => {
     assert.equal(addButtonLabel(product), 'Sin stock')
     assert.equal(canAdd(product, initialSelection(product)), false)
     assert.equal(priceMuted(product, initialSelection(product)), true)
+    assert.equal(quedaUnoTexto(product, initialSelection(product)), null)
+    assert.equal(stepperMuted(product), true)
   })
 })

@@ -13,6 +13,7 @@ import {
   quedaUnoTexto,
   showChooseHint,
   sizeChoices,
+  stepperMuted,
   type PrendaProduct,
 } from '../../lib/prenda'
 import { totalStock } from '../../lib/stock'
@@ -54,6 +55,7 @@ const ready = canAdd(prenda, selection)
 const cap = quantityCap(prenda, selection)
 const queda = quedaUnoTexto(prenda, selection)
 const muted = priceMuted(prenda, selection)
+const stepperOff = stepperMuted(prenda)
 
 const tienda = (await getCollection('tienda'))[0]?.data
 const textoEnvio = tienda?.texto_envio.trim() || 'A coordinar'
@@ -246,7 +248,14 @@ const jsonLd = {
     <div>
       <p id="cantidad-label" class="texto-etiqueta text-texto">Cantidad</p>
       <div class="mt-2 flex flex-wrap items-center gap-3">
-        <div class="inline-flex items-center rounded-medio border border-borde-control bg-superficie" aria-labelledby="cantidad-label">
+        <div
+          data-cantidad-caja
+          class:list={[
+            'inline-flex items-center rounded-medio border',
+            stepperOff ? 'border-borde bg-superficie-hundida' : 'border-borde-control bg-superficie',
+          ]}
+          aria-labelledby="cantidad-label"
+        >
           <button
             type="button"
             data-bajar
@@ -256,16 +265,23 @@ const jsonLd = {
           >
             −
           </button>
-          <span data-cantidad class="min-w-8 text-center texto-etiqueta text-texto tabular-nums" aria-live="polite">1</span>
+          <span
+            data-cantidad
+            class:list={[
+              'min-w-8 text-center texto-etiqueta tabular-nums',
+              stepperOff ? 'text-texto-deshabilitado' : 'text-texto',
+            ]}
+            aria-live="polite"
+          >1</span>
           <button
             type="button"
             data-subir
             class:list={[
               'inline-flex size-minimo items-center justify-center texto-etiqueta',
-              cap <= 1 ? 'text-texto-deshabilitado' : 'text-texto',
+              stepperOff || cap <= 1 ? 'text-texto-deshabilitado' : 'text-texto',
             ]}
             aria-label="Subir cantidad"
-            aria-disabled={cap <= 1 ? 'true' : 'false'}
+            aria-disabled={stepperOff || cap <= 1 ? 'true' : 'false'}
           >
             +
           </button>

@@ -160,11 +160,20 @@ export function clampQuantity(quantity: number, cap: number): number {
   return whole
 }
 
-/** "Queda 1" solo cuando la variante elegida tiene una unidad. */
+/**
+ * "Queda 1" cuando la variante elegida tiene una unidad.
+ * Pieza única no lo muestra: la etiqueta ya lo dice.
+ */
 export function quedaUnoTexto(product: PrendaProduct, selection: Selection): 'Queda 1' | null {
+  if (product.pieza_unica) return null
   const variant = selectedVariant(product, selection)
   if (!variant || !quedaUna(variant)) return null
   return 'Queda 1'
+}
+
+/** Sin stock, el stepper queda apagado: no se puede bajar ni subir. */
+export function stepperMuted(product: PrendaProduct): boolean {
+  return isSoldOut(product)
 }
 
 export function canAdd(product: PrendaProduct, selection: Selection): boolean {

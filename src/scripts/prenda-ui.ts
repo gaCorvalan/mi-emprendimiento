@@ -15,6 +15,7 @@ import {
   quantityCap,
   quedaUnoTexto,
   showChooseHint,
+  stepperMuted,
   sizeChoices,
   type PrendaProduct,
   type Selection,
@@ -122,10 +123,24 @@ export function initPrenda(): void {
     }
 
     if (quedaEl) quedaEl.hidden = quedaUnoTexto(product, selection) === null
-    if (countEl) countEl.textContent = String(quantity)
+    if (countEl) {
+      countEl.textContent = String(quantity)
+      const muted = stepperMuted(product)
+      countEl.classList.toggle('text-texto-deshabilitado', muted)
+      countEl.classList.toggle('text-texto', !muted)
+    }
 
-    const downOff = quantity <= 1
-    const upOff = cap <= 0 || quantity >= cap
+    const off = stepperMuted(product)
+    const box = root.querySelector<HTMLElement>('[data-cantidad-caja]')
+    if (box) {
+      box.classList.toggle('bg-superficie-hundida', off)
+      box.classList.toggle('border-borde', off)
+      box.classList.toggle('bg-superficie', !off)
+      box.classList.toggle('border-borde-control', !off)
+    }
+
+    const downOff = off || quantity <= 1
+    const upOff = off || cap <= 0 || quantity >= cap
     if (down) {
       down.setAttribute('aria-disabled', downOff ? 'true' : 'false')
       down.classList.toggle('text-texto-deshabilitado', downOff)
@@ -172,7 +187,7 @@ export function initPrenda(): void {
     }
 
     if (target.closest('[data-bajar]')) {
-      if (quantity <= 1) return
+      if (stepperMuted(product) || quantity <= 1) return
       quantity -= 1
       paint()
       return
@@ -180,7 +195,7 @@ export function initPrenda(): void {
 
     if (target.closest('[data-subir]')) {
       const cap = quantityCap(product, selection)
-      if (cap <= 0 || quantity >= cap) return
+      if (stepperMuted(product) || cap <= 0 || quantity >= cap) return
       quantity += 1
       paint()
       return
