@@ -12,7 +12,9 @@ El CMS es otro proyecto, [gonzi-store-cms](https://github.com/gaCorvalan/gonzi-s
 - `GET {STRAPI_URL}/api/categories` con `populate` explícito de `image`, `products`, `subcategories`, `category` y `product_sets`
 - `GET {STRAPI_URL}/api/tienda` (tipo único: nombre, whatsapp, texto de envío, moneda)
 
-Strapi manda las colecciones de a 25. El loader sigue de página en página hasta bajar el catálogo entero. Esos datos alimentan las colecciones de Astro `products-seo`, `categories` y `tienda`. Con eso se generan el inicio y una página por producto en `/productos/[slug]`. Si la Tienda no está publicada, el build sigue y el encabezado usa el nombre «Tienda». Un whatsapp vacío no corta el build.
+Strapi manda las colecciones de a 25. El loader sigue de página en página hasta bajar el catálogo entero. Esos datos alimentan las colecciones de Astro `products-seo`, `categories` y `tienda`. Con eso se generan el inicio, las páginas del catálogo, la ficha y el carrito. Si la Tienda no está publicada, el build sigue y el encabezado usa el nombre «Tienda». Un whatsapp vacío no corta el build.
+
+Un cambio de stock, de precio o del número de WhatsApp en el CMS queda en el HTML recién cuando volvés a armar el sitio. Todavía no hay un deploy definido. El detalle del recorrido está en `docs/CONTENT_LAYER_IMPLEMENTATION.md`.
 
 ## Qué necesitás
 
@@ -36,13 +38,19 @@ El permiso de lectura pública sale solo al arrancar el CMS: el rol Public puede
 
 ## Variables de entorno
 
+Están en [`.env.example`](.env.example), sin secretos. Copialo y, si hace falta, cambialo:
+
+```bash
+cp .env.example .env
+```
+
 | Variable | Para qué |
 | --- | --- |
 | `STRAPI_URL` | Dirección del CMS, sin barra al final. Ejemplo: `http://localhost:1337`. Si no la ponés, el loader usa esa misma dirección. |
 | `PUBLIC_STRAPI_URL` | Está declarada en `src/env.d.ts`, pero hoy ningún archivo la lee. No la uses: la que vale es `STRAPI_URL`. |
 | `SITE_URL` | Opcional. URL pública del sitio, por ejemplo `https://minigonzi.com.ar`. Si está, Astro genera `sitemap.xml` con links absolutos. Si no está, el sitemap se saltea. |
 
-Podés exportarlas en la terminal o ponerlas en un `.env` en esta carpeta (no lo subas al repo).
+El `.env` no se sube al repo. El número de WhatsApp tampoco: se carga en el CMS, en el tipo único Tienda.
 
 ## Cómo correr la tienda
 
@@ -68,6 +76,13 @@ npm run preview
 SITE_URL=https://minigonzi.com.ar npm run build
 ```
 
+## Páginas
+
+- `/` — el catálogo.
+- `/pagina/2`, `/pagina/3`, … — el resto del catálogo, de a 24 prendas.
+- `/productos/[slug]` — la ficha.
+- `/carrito` — el pedido y el mensaje de WhatsApp.
+
 ## Qué anda hoy
 
 - El inicio es el catálogo: grilla de dos columnas, nombre, precio y etiqueta de stock (pieza única, última unidad o sin stock). Si hay más de 24 prendas, sigue en `/pagina/2`. Arriba se puede buscar por nombre. «Filtrar y ordenar» abre categoría, talle, color y orden; la elección queda en la URL.
@@ -75,7 +90,7 @@ SITE_URL=https://minigonzi.com.ar npm run build
 - Si un producto no tiene imagen, la tarjeta y la ficha muestran un recuadro plano, sin letra. No se publica `og:image` vacío ni un `img` sin `src`.
 - El build baja productos, categorías y la Tienda.
 - El encabezado muestra el nombre de la Tienda y el carrito, con la cantidad de prendas. El texto de envío de la ficha y de `/carrito` sale de la Tienda (por defecto, «A coordinar»).
-- `/carrito` lista el pedido, deja cambiar cantidades y quitar. «Pedir por WhatsApp» abre el mensaje con el número de la Tienda. Si ese número está vacío o no es válido, el botón queda deshabilitado. El carrito no se vacía al abrir WhatsApp. El stock del carrito es el de la variante al agregarla; no se vuelve a consultar.
+- `/carrito` lista el pedido, deja cambiar cantidades y quitar. Si hay más de una unidad, el precio grande es el subtotal de la línea y abajo dice cuánto sale cada una. «Pedir por WhatsApp» abre el mensaje con el número de la Tienda (el del tipo único en el CMS, no uno del repo). Si ese número está vacío o no es válido, el botón queda deshabilitado. El carrito no se vacía al abrir WhatsApp. El stock del carrito es el de la variante al agregarla; no se vuelve a consultar.
 - `npm test` cubre el stock, el precio en pesos (`src/lib/stock.ts`), la búsqueda y los filtros (`src/lib/filters.ts`), la ficha (`src/lib/prenda.ts`), el carrito (`src/lib/carrito.ts`) y el mensaje de WhatsApp (`src/lib/whatsapp.ts`).
 
 ## Qué falta

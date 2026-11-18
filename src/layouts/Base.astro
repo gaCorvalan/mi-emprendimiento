@@ -11,6 +11,7 @@ const { title, description } = Astro.props
 
 const tienda = (await getCollection('tienda'))[0]?.data
 const nombreTienda = tienda?.nombre.trim() || 'Tienda'
+const resumen = description?.trim() || nombreTienda
 ---
 
 <!doctype html>
@@ -19,9 +20,10 @@ const nombreTienda = tienda?.nombre.trim() || 'Tienda'
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
-    {description && <meta name="description" content={description} />}
+    <meta name="description" content={resumen} />
     <title>{title}</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <slot name="head" />
   </head>
   <body class="min-h-screen bg-fondo text-texto font-texto antialiased">

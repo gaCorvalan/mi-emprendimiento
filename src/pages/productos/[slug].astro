@@ -58,7 +58,9 @@ const muted = priceMuted(prenda, selection)
 const stepperOff = stepperMuted(prenda)
 
 const tienda = (await getCollection('tienda'))[0]?.data
+const nombreTienda = tienda?.nombre.trim() || 'Tienda'
 const textoEnvio = tienda?.texto_envio.trim() || 'A coordinar'
+const titulo = `${product.name} · ${nombreTienda}`
 
 const imageUrl =
   product.image?.formats?.large?.url
@@ -113,15 +115,15 @@ const jsonLd = {
 }
 ---
 
-<Base title={`${product.name} - Mi Tienda`} description={description}>
+<Base title={titulo} description={description}>
   <Fragment slot="head">
     <meta name="keywords" content={`${product.name}, producto, tienda, ecommerce`} />
     <meta property="og:type" content="product" />
-    <meta property="og:title" content={`${product.name} - Mi Tienda`} />
+    <meta property="og:title" content={titulo} />
     <meta property="og:description" content={product.description || `Descubre ${product.name} en nuestra tienda`} />
     {imageUrl && <meta property="og:image" content={imageUrl} />}
     <meta name="twitter:card" content={imageUrl ? 'summary_large_image' : 'summary'} />
-    <meta name="twitter:title" content={`${product.name} - Mi Tienda`} />
+    <meta name="twitter:title" content={titulo} />
     <meta name="twitter:description" content={product.description || `Descubre ${product.name} en nuestra tienda`} />
     {imageUrl && <meta name="twitter:image" content={imageUrl} />}
   </Fragment>

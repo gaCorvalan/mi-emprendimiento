@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
+import { formatArs } from './stock.ts'
 import {
   CART_KEY,
   addItem,
   emptyCart,
   parseCart,
+  linePrice,
   quedaUnoTexto,
   removeItem,
   setQuantity,
@@ -179,5 +181,19 @@ describe('textos', () => {
   it('el total de un carrito vacío es cero', () => {
     assert.equal(totalUnits(emptyCart()), 0)
     assert.equal(totalPrice(emptyCart()), 0)
+  })
+
+  it('con una unidad el precio es el de la unidad', () => {
+    assert.deepEqual(linePrice(item({ unitPrice: 19900, quantity: 1 })), {
+      main: formatArs(19900),
+      each: null,
+    })
+  })
+
+  it('con más de una unidad muestra el subtotal y el precio por unidad', () => {
+    assert.deepEqual(linePrice(item({ unitPrice: 19900, quantity: 2, maxStock: 4 })), {
+      main: formatArs(39800),
+      each: `${formatArs(19900)} c/u`,
+    })
   })
 })
