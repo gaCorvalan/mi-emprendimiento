@@ -2,6 +2,7 @@
 
 ## 2026-11-18
 
+- La ficha elige talle y color según el stock; el botón avisa y todavía no arma el carrito.
 - El catálogo se puede buscar y filtrar por categoría, talle y color, y ordenar.
 - La base visual (colores, tipo, radios y sombras) queda en tokens, con un layout común y el nombre de la tienda.
 - El build baja variantes, categorías y la Tienda, y deja listo el cálculo de stock y el precio en pesos.

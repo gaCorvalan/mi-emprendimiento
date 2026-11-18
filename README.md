@@ -71,14 +71,14 @@ SITE_URL=https://minigonzi.com.ar npm run build
 ## Qué anda hoy
 
 - El inicio es el catálogo: grilla de dos columnas, nombre, precio y etiqueta de stock (pieza única, última unidad o sin stock). Si hay más de 24 prendas, sigue en `/pagina/2`. Arriba se puede buscar por nombre. «Filtrar y ordenar» abre categoría, talle, color y orden; la elección queda en la URL.
-- Cada producto tiene su ficha en `/productos/[slug]`: nombre, precio, descripción y datos para buscadores (JSON-LD).
-- Si un producto no tiene imagen, la tarjeta muestra un recuadro plano y la ficha un recuadro con la inicial. No se publica `og:image` vacío ni un `img` sin `src`.
+- Cada producto tiene su ficha en `/productos/[slug]`: foto, precio, talle, color y cantidad. El botón dispara `agregar-al-carrito` y todavía no guarda el pedido. También hay datos para buscadores (JSON-LD).
+- Si un producto no tiene imagen, la tarjeta y la ficha muestran un recuadro plano, sin letra. No se publica `og:image` vacío ni un `img` sin `src`.
 - El build baja productos, categorías y la Tienda.
 - El encabezado muestra el nombre de la Tienda. El texto de envío de la ficha sale de ahí (por defecto, «A coordinar»).
-- `npm test` cubre el stock, el precio en pesos (`src/lib/stock.ts`) y la búsqueda, los filtros y el orden (`src/lib/filters.ts`). La ficha todavía no elige talle ni color.
+- `npm test` cubre el stock, el precio en pesos (`src/lib/stock.ts`), la búsqueda y los filtros (`src/lib/filters.ts`) y la ficha (`src/lib/prenda.ts`).
 
 ## Qué falta
 
-- El botón Comprar no hace nada. No hay carrito ni mensaje de WhatsApp.
+- El botón «Agregar al carrito» no guarda el pedido. No hay carrito ni mensaje de WhatsApp.
 - No hay página de categoría ni listado aparte. Las categorías se usan para filtrar el catálogo.
-- No se elige talle ni color, y no se muestran las promos. El catálogo sí muestra si es pieza única, última unidad o sin stock.
+- No se muestran las promos. El catálogo sí muestra si es pieza única, última unidad o sin stock.
