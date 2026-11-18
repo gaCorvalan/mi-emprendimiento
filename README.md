@@ -75,11 +75,10 @@ SITE_URL=https://minigonzi.com.ar npm run build
 - Si un producto no tiene imagen, la tarjeta y la ficha muestran un recuadro plano, sin letra. No se publica `og:image` vacío ni un `img` sin `src`.
 - El build baja productos, categorías y la Tienda.
 - El encabezado muestra el nombre de la Tienda y el carrito, con la cantidad de prendas. El texto de envío de la ficha y de `/carrito` sale de la Tienda (por defecto, «A coordinar»).
-- `/carrito` lista el pedido, deja cambiar cantidades y quitar. El botón de WhatsApp está a la vista y deshabilitado: el mensaje llega en el próximo paso. El stock del carrito es el de la variante al agregarla; no se vuelve a consultar.
-- `npm test` cubre el stock, el precio en pesos (`src/lib/stock.ts`), la búsqueda y los filtros (`src/lib/filters.ts`), la ficha (`src/lib/prenda.ts`) y el carrito (`src/lib/carrito.ts`).
+- `/carrito` lista el pedido, deja cambiar cantidades y quitar. «Pedir por WhatsApp» abre el mensaje con el número de la Tienda. Si ese número está vacío o no es válido, el botón queda deshabilitado. El carrito no se vacía al abrir WhatsApp. El stock del carrito es el de la variante al agregarla; no se vuelve a consultar.
+- `npm test` cubre el stock, el precio en pesos (`src/lib/stock.ts`), la búsqueda y los filtros (`src/lib/filters.ts`), la ficha (`src/lib/prenda.ts`), el carrito (`src/lib/carrito.ts`) y el mensaje de WhatsApp (`src/lib/whatsapp.ts`).
 
 ## Qué falta
 
-- El botón «Pedir por WhatsApp» no arma el mensaje.
 - No hay página de categoría ni listado aparte. Las categorías se usan para filtrar el catálogo.
 - No se muestran las promos. El catálogo sí muestra si es pieza única, última unidad o sin stock.
