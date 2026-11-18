@@ -1,21 +1,59 @@
 ---
-import { getCollection } from 'astro:content';
-import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content'
+import Base from '../../layouts/Base.astro'
+import { cardView } from '../../lib/catalog'
+import {
+  addButtonLabel,
+  canAdd,
+  colorChoices,
+  initialSelection,
+  priceMuted,
+  priceText,
+  quantityCap,
+  quedaUnoTexto,
+  showChooseHint,
+  sizeChoices,
+  type PrendaProduct,
+} from '../../lib/prenda'
+import { totalStock } from '../../lib/stock'
 
 export async function getStaticPaths() {
-    const products = getCollection('products-seo')
+  const products = getCollection('products-seo')
 
-    return (await products).map(({data: product}) => ({
-        params: {
-            slug: product.slug
-        },
-        props: {
-            product
-        }
-    }))
+  return (await products).map(({ data: product }) => ({
+    params: {
+      slug: product.slug,
+    },
+    props: {
+      product,
+    },
+  }))
 }
 
 const { product } = Astro.props
+
+const prenda: PrendaProduct = {
+  slug: product.slug,
+  base_price: product.base_price,
+  pieza_unica: product.pieza_unica,
+  product_variants: product.product_variants.map((variant) => ({
+    id: variant.id,
+    size: variant.size,
+    color: variant.color,
+    color_hex: variant.color_hex,
+    stock_quantity: variant.stock_quantity,
+    price: variant.price,
+  })),
+}
+
+const selection = initialSelection(prenda)
+const sizes = sizeChoices(prenda, selection)
+const colors = colorChoices(prenda, selection)
+const view = cardView(prenda)
+const ready = canAdd(prenda, selection)
+const cap = quantityCap(prenda, selection)
+const queda = quedaUnoTexto(prenda, selection)
+const muted = priceMuted(prenda, selection)
 
 const tienda = (await getCollection('tienda'))[0]?.data
 const textoEnvio = tienda?.texto_envio.trim() || 'A coordinar'
@@ -26,7 +64,30 @@ const imageUrl =
   ?? product.image?.formats?.small?.url
   ?? product.image?.url
 
+const photos = imageUrl ? [imageUrl] : []
+const photoAlt = product.image?.alternativeText?.trim() || ''
+
 const description = `${product.name} - ${product.description || 'Producto de calidad en nuestra tienda'}`
+
+const labelClass =
+  view.label === 'PIEZA ÚNICA' ? 'border border-borde-control bg-superficie text-texto'
+  : view.label === 'ÚLTIMA UNIDAD' ? 'bg-aviso-fondo text-aviso'
+  : view.label === 'SIN STOCK' ? 'bg-error-fondo text-error'
+  : ''
+
+function chipClass(enabled: boolean, selected: boolean): string {
+  const base = 'inline-flex min-h-minimo items-center justify-center gap-2 rounded-medio px-3 texto-etiqueta'
+  if (!enabled) return `${base} bg-superficie-hundida text-texto-deshabilitado`
+  if (selected) return `${base} bg-acento text-acento-texto`
+  return `${base} border border-borde-control bg-superficie text-texto`
+}
+
+function swatchStyle(hex: string | null): string | undefined {
+  if (!hex || !/^#[0-9A-Fa-f]{6}$/.test(hex)) return undefined
+  return `background-color: ${hex}`
+}
+
+const datosJson = JSON.stringify(prenda).replace(/</g, '\\u003c')
 
 const jsonLd = {
   '@context': 'https://schema.org/',
@@ -39,7 +100,9 @@ const jsonLd = {
     url: Astro.url.href,
     priceCurrency: 'ARS',
     price: product.base_price,
-    availability: 'https://schema.org/InStock',
+    availability: totalStock(prenda) > 0
+      ? 'https://schema.org/InStock'
+      : 'https://schema.org/OutOfStock',
   },
 }
 ---
@@ -57,92 +120,191 @@ const jsonLd = {
     {imageUrl && <meta name="twitter:image" content={imageUrl} />}
   </Fragment>
 
-  <div class="py-8">
-    <nav aria-label="Breadcrumb" class="mb-8">
-      <ol class="flex items-center space-x-2 text-sm text-texto-secundario">
-        <li>
-          <a href="/" class="hover:text-texto rounded-chico px-1">Inicio</a>
-        </li>
-        <li class="flex items-center">
-          <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-          </svg>
-          <span class="font-medium text-texto">{product.name}</span>
-        </li>
-      </ol>
-    </nav>
+  <div class="flex flex-col gap-4 py-4" data-prenda>
+    <a
+      href="/"
+      data-volver
+      class="inline-flex min-h-minimo items-center self-start texto-etiqueta text-texto no-underline"
+    >
+      ‹ Volver
+    </a>
 
-    <section class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-      <div class="aspect-square">
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt={`Imagen del producto ${product.name}`}
-            class="w-full h-full object-cover rounded-medio shadow-1 bg-superficie"
-            loading="eager"
-          />
-        ) : (
-          <div class="w-full h-full rounded-medio shadow-1 bg-acento text-acento-texto flex items-center justify-center">
-            <span class="font-semibold text-6xl">
-              {product.name.charAt(0).toUpperCase()}
-            </span>
-          </div>
-        )}
+    {photos.length === 0 && (
+      <div class="aspect-square w-full rounded-grande bg-superficie-hundida" role="img" aria-label="Sin foto"></div>
+    )}
+
+    {photos.length === 1 && (
+      <img
+        src={photos[0]}
+        alt={photoAlt}
+        class="aspect-square w-full rounded-grande bg-superficie-hundida object-cover"
+        width="358"
+        height="358"
+      />
+    )}
+
+    {photos.length > 1 && (
+      <div>
+        <div class="flex snap-x snap-mandatory overflow-x-auto rounded-grande" data-galeria>
+          {photos.map((src, index) => (
+            <img
+              src={src}
+              alt={photoAlt}
+              class="aspect-square w-full shrink-0 snap-start bg-superficie-hundida object-cover"
+              loading={index === 0 ? 'eager' : 'lazy'}
+            />
+          ))}
+        </div>
+        <div class="flex justify-center">
+          {photos.map((_, index) => (
+            <button
+              type="button"
+              class="inline-flex size-minimo items-center justify-center"
+              data-punto={index}
+              aria-label={`Foto ${index + 1} de ${photos.length}`}
+              aria-current={index === 0 ? 'true' : 'false'}
+            >
+              <span
+                data-punto-marca
+                class:list={['size-2 rounded-full', index === 0 ? 'bg-texto' : 'bg-borde']}
+              ></span>
+            </button>
+          ))}
+        </div>
       </div>
+    )}
 
-      <div class="flex flex-col justify-start space-y-6">
-        <header>
-          <h1 class="text-3xl sm:text-4xl font-semibold text-texto leading-tight">
-            {product.name}
-          </h1>
-        </header>
-
-        <div class="flex items-center space-x-4">
-          <span class="text-3xl font-semibold text-texto tabular-nums">
-            ${product.base_price?.toLocaleString('es-AR') || 'Precio no disponible'}
+    <div class="flex flex-col gap-2">
+      <h1 class="texto-titulo text-texto">{product.name}</h1>
+      <p
+        data-precio
+        class:list={['texto-precio', muted ? 'text-texto-secundario' : 'text-texto']}
+        aria-live="polite"
+      >
+        {priceText(prenda, selection)}
+      </p>
+      {view.label && (
+        <p>
+          <span class:list={['inline-flex h-6 items-center rounded-chico px-2 texto-etiqueta-chica', labelClass]}>
+            {view.label}
           </span>
-          <span class="texto-etiqueta bg-exito-fondo text-exito px-2 py-1 rounded-pastilla">
-            Precio final
-          </span>
+        </p>
+      )}
+    </div>
+
+    {sizes.length > 0 && (
+      <div>
+        <p id="talle-label" class="texto-etiqueta text-texto">Talle</p>
+        <div class="mt-2 flex flex-wrap gap-2" role="group" aria-labelledby="talle-label">
+          {sizes.map((choice) => {
+            const selected = selection.size === choice.value && choice.enabled
+            return (
+              <button
+                type="button"
+                class={chipClass(choice.enabled, selected)}
+                data-talle
+                data-valor={choice.value}
+                aria-pressed={selected ? 'true' : 'false'}
+                aria-disabled={choice.enabled ? undefined : 'true'}
+              >
+                <span data-nombre class:list={[!choice.enabled && 'line-through']}>{choice.value}</span>
+              </button>
+            )
+          })}
         </div>
+      </div>
+    )}
 
-        {product.description && (
-          <div class="max-w-none">
-            <h2 class="text-xl font-semibold text-texto mb-3">Descripción</h2>
-            <p class="texto-cuerpo text-texto">
-              {product.description}
-            </p>
-          </div>
-        )}
-
-        <div class="bg-superficie-hundida rounded-medio p-6 space-y-4">
-          <h2 class="text-lg font-semibold text-texto">Detalles del producto</h2>
-          <dl class="grid grid-cols-1 gap-3 text-sm">
-            <div class="flex justify-between">
-              <dt class="font-medium text-texto-secundario">SKU:</dt>
-              <dd class="text-texto">{product.slug}</dd>
-            </div>
-            <div class="flex justify-between">
-              <dt class="font-medium text-texto-secundario">Disponibilidad:</dt>
-              <dd class="text-exito font-medium">En stock</dd>
-            </div>
-          </dl>
+    {colors.length > 0 && (
+      <div>
+        <p id="color-label" class="texto-etiqueta text-texto">Color</p>
+        <div class="mt-2 flex flex-wrap gap-2" role="group" aria-labelledby="color-label">
+          {colors.map((choice) => {
+            const selected = selection.color === choice.value && choice.enabled
+            return (
+              <button
+                type="button"
+                class={chipClass(choice.enabled, selected)}
+                data-color
+                data-valor={choice.value}
+                aria-pressed={selected ? 'true' : 'false'}
+                aria-disabled={choice.enabled ? undefined : 'true'}
+              >
+                <span
+                  class="size-4 shrink-0 rounded-full border border-borde"
+                  style={swatchStyle(choice.colorHex)}
+                  aria-hidden="true"
+                ></span>
+                <span data-nombre class:list={[!choice.enabled && 'line-through']}>{choice.value}</span>
+              </button>
+            )
+          })}
         </div>
+      </div>
+    )}
 
-        <div class="space-y-4 pt-6">
+    <div>
+      <p id="cantidad-label" class="texto-etiqueta text-texto">Cantidad</p>
+      <div class="mt-2 flex flex-wrap items-center gap-3">
+        <div class="inline-flex items-center rounded-medio border border-borde-control bg-superficie" aria-labelledby="cantidad-label">
           <button
             type="button"
-            class="w-full min-h-cta bg-acento text-acento-texto font-semibold py-4 px-6 rounded-medio"
-            aria-describedby="add-to-cart-description"
+            data-bajar
+            class="inline-flex size-minimo items-center justify-center texto-etiqueta text-texto-deshabilitado"
+            aria-label="Bajar cantidad"
+            aria-disabled="true"
           >
-            Comprar
+            −
           </button>
-          <p id="add-to-cart-description" class="texto-cuerpo text-texto-secundario text-center">
-            {textoEnvio}
-          </p>
+          <span data-cantidad class="min-w-8 text-center texto-etiqueta text-texto tabular-nums" aria-live="polite">1</span>
+          <button
+            type="button"
+            data-subir
+            class:list={[
+              'inline-flex size-minimo items-center justify-center texto-etiqueta',
+              cap <= 1 ? 'text-texto-deshabilitado' : 'text-texto',
+            ]}
+            aria-label="Subir cantidad"
+            aria-disabled={cap <= 1 ? 'true' : 'false'}
+          >
+            +
+          </button>
         </div>
+        <p data-queda class="texto-cuerpo-chico text-aviso" hidden={queda === null}>Queda 1</p>
       </div>
-    </section>
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <button
+        type="button"
+        data-agregar
+        class="inline-flex min-h-cta w-full items-center justify-center rounded-medio bg-acento px-4 text-acento-texto texto-etiqueta disabled:bg-superficie-hundida disabled:text-texto-deshabilitado"
+        disabled={!ready}
+        aria-describedby={showChooseHint(prenda, selection) ? 'elegir-talle-color' : undefined}
+      >
+        {addButtonLabel(prenda)}
+      </button>
+      <p
+        id="elegir-talle-color"
+        data-ayuda
+        class="texto-cuerpo-chico text-center text-texto-secundario"
+        hidden={!showChooseHint(prenda, selection)}
+      >
+        Elegí talle y color
+      </p>
+    </div>
+
+    {product.description && (
+      <p class="texto-cuerpo text-texto">{product.description}</p>
+    )}
+
+    <p class="texto-cuerpo text-texto-secundario">Envío: {textoEnvio}</p>
+
+    <script id="prenda-datos" type="application/json" is:inline set:html={datosJson}></script>
+    <script>
+      import { initPrenda } from '../../scripts/prenda-ui.ts'
+      initPrenda()
+    </script>
   </div>
 
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')} />
