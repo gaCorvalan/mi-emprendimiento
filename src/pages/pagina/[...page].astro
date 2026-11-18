@@ -1,0 +1,27 @@
+---
+import { getCollection } from 'astro:content'
+import Base from '../../layouts/Base.astro'
+import Catalogo from '../../components/Catalogo.astro'
+import { PAGE_SIZE } from '../../lib/catalog'
+
+export async function getStaticPaths({ paginate }) {
+  const productos = await getCollection('products-seo')
+  // La página 1 es el inicio (/). Acá solo entran /pagina/2, /pagina/3, …
+  return paginate(productos, { pageSize: PAGE_SIZE }).filter(
+    (entry) => entry.props.page.currentPage > 1,
+  )
+}
+
+const { page } = Astro.props
+const nombre = (await getCollection('tienda'))[0]?.data.nombre.trim() || 'Tienda'
+---
+
+<Base title={`${nombre} — página ${page.currentPage}`} description={`Catálogo de ${nombre}.`}>
+  <Catalogo
+    products={page.data.map((entry) => entry.data)}
+    shown={page.data.length}
+    total={page.total}
+    currentPage={page.currentPage}
+    lastPage={page.lastPage}
+  />
+</Base>

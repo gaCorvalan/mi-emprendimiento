@@ -7,7 +7,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "test": "node --test src/lib/stock.test.ts"
+    "test": "node --test src/lib/stock.test.ts src/lib/catalog.test.ts"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",

@@ -1,0 +1,56 @@
+---
+import type { Product } from '../content.config'
+import { cardView } from '../lib/catalog'
+
+interface Props {
+  product: Product
+}
+
+const { product } = Astro.props
+const view = cardView(product)
+
+const imageUrl =
+  product.image?.formats?.small?.url
+  || product.image?.formats?.medium?.url
+  || product.image?.formats?.thumbnail?.url
+  || product.image?.url
+
+const labelClass =
+  view.label === 'PIEZA ÚNICA' ? 'border border-borde-control bg-superficie text-texto'
+  : view.label === 'ÚLTIMA UNIDAD' ? 'bg-aviso-fondo text-aviso'
+  : view.label === 'SIN STOCK' ? 'bg-error-fondo text-error'
+  : ''
+---
+
+<a
+  href={`/productos/${product.slug}`}
+  class="flex h-full flex-col overflow-hidden rounded-medio bg-superficie shadow-1 no-underline"
+>
+  <div class="relative aspect-square bg-superficie-hundida">
+    {imageUrl && (
+      <img
+        src={imageUrl}
+        alt=""
+        class="h-full w-full object-cover"
+        loading="lazy"
+        decoding="async"
+      />
+    )}
+    {view.label && (
+      <span
+        class:list={[
+          'absolute left-2 top-2 inline-flex h-6 items-center rounded-chico px-2 texto-etiqueta-chica whitespace-nowrap',
+          labelClass,
+        ]}
+      >
+        {view.label}
+      </span>
+    )}
+  </div>
+  <div class="flex flex-col gap-1 p-3">
+    <p class="texto-cuerpo line-clamp-2 text-texto">{product.name}</p>
+    <p class:list={['texto-precio', view.priceMuted ? 'text-texto-secundario' : 'text-texto']}>
+      {view.priceText}
+    </p>
+  </div>
+</a>

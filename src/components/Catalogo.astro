@@ -1,0 +1,52 @@
+---
+import type { Product } from '../content.config'
+import ProductCard from './ProductCard.astro'
+import { catalogPagePath, prendasLabel, showingLabel } from '../lib/catalog'
+
+interface Props {
+  products: Product[]
+  shown: number
+  total: number
+  currentPage: number
+  lastPage: number
+}
+
+const { products, shown, total, currentPage, lastPage } = Astro.props
+const prev = currentPage > 1 ? catalogPagePath(currentPage - 1) : undefined
+const next = currentPage < lastPage ? catalogPagePath(currentPage + 1) : undefined
+---
+
+<section class="flex flex-col gap-3 py-3">
+  <p class="texto-cuerpo-chico text-texto-secundario">{prendasLabel(total)}</p>
+
+  {total > 0 && (
+    <ul class="grid list-none grid-cols-2 gap-4 p-0">
+      {products.map((product) => (
+        <li class="min-w-0">
+          <ProductCard product={product} />
+        </li>
+      ))}
+    </ul>
+  )}
+
+  {total > 0 && (
+    <p class="texto-cuerpo-chico text-center text-texto-secundario">
+      {showingLabel(shown, total)}
+    </p>
+  )}
+
+  {(prev || next) && (
+    <nav class="flex items-center justify-center gap-4" aria-label="Paginación">
+      {prev && (
+        <a href={prev} class="inline-flex min-h-minimo items-center px-3 texto-cuerpo text-texto no-underline">
+          Anterior
+        </a>
+      )}
+      {next && (
+        <a href={next} class="inline-flex min-h-minimo items-center px-3 texto-cuerpo text-texto no-underline">
+          Siguiente
+        </a>
+      )}
+    </nav>
+  )}
+</section>
