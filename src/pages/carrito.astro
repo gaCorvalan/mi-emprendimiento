@@ -1,10 +1,12 @@
 ---
 import { getCollection } from 'astro:content'
 import Base from '../layouts/Base.astro'
+import { whatsappDigits } from '../lib/whatsapp.ts'
 
 const tienda = (await getCollection('tienda'))[0]?.data
 const nombre = tienda?.nombre.trim() || 'Tienda'
 const textoEnvio = tienda?.texto_envio.trim() || 'A coordinar'
+const whatsapp = whatsappDigits(tienda?.whatsapp)
 ---
 
 <Base title={`Tu carrito - ${nombre}`} description={`Carrito de ${nombre}.`}>
@@ -39,20 +41,42 @@ const textoEnvio = tienda?.texto_envio.trim() || 'A coordinar'
     </div>
   </div>
 
-  <div class="pointer-events-none fixed inset-x-0 bottom-0 z-30" data-carrito-barra hidden>
+  <div
+    class="pointer-events-none fixed inset-x-0 bottom-0 z-30"
+    data-carrito-barra
+    data-tienda={nombre}
+    data-whatsapp={whatsapp ?? ''}
+    hidden
+  >
     <div class="pointer-events-auto bg-superficie shadow-2">
       <div class="contenedor flex flex-col gap-2 pt-3 pb-5">
-        <p id="whatsapp-ayuda" class="text-center texto-cuerpo-chico text-texto-secundario">
-          El pedido por WhatsApp llega en el próximo paso.
-        </p>
-        <button
-          type="button"
-          disabled
-          class="inline-flex min-h-cta w-full items-center justify-center rounded-medio bg-acento px-4 text-acento-texto texto-etiqueta disabled:bg-superficie-hundida disabled:text-texto-deshabilitado"
-          aria-describedby="whatsapp-ayuda"
-        >
-          Pedir por WhatsApp
-        </button>
+        {whatsapp ? (
+          <a
+            data-whatsapp-pedido
+            target="_blank"
+            rel="noopener"
+            class="inline-flex min-h-cta w-full items-center justify-center gap-2 rounded-medio bg-whatsapp px-4 text-whatsapp-texto texto-etiqueta no-underline"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 3.2a8.8 8.8 0 0 0-7.6 13.2L3.2 20.8l4.5-1.2A8.8 8.8 0 1 0 12 3.2Zm5 12.4c-.2.6-1.2 1.1-1.6 1.1-.5.1-1 .1-1.6-.1-.4-.1-.8-.3-1.4-.5-2.4-1-4-3.5-4.1-3.7-.1-.2-1-1.3-1-2.4s.6-1.7.9-2c.2-.2.5-.3.7-.3h.5c.1 0 .3 0 .5.4.2.5.7 1.8.8 2 .1.1.1.3 0 .4l-.4.5c-.1.1-.2.3-.1.5.1.3.6 1.1 1.4 1.8.9.8 1.7 1 2 .1.1.2.4.1.5 0l.6-.7c.2-.2.3-.2.5-.1l1.7.8c.2.1.4.2.4.3.1.3.1 1-.1 1.5Z"></path>
+            </svg>
+            Pedir por WhatsApp
+          </a>
+        ) : (
+          <>
+            <p id="whatsapp-ayuda" class="text-center texto-cuerpo-chico text-texto-secundario">
+              La tienda todavía no cargó su WhatsApp
+            </p>
+            <button
+              type="button"
+              disabled
+              class="inline-flex min-h-cta w-full items-center justify-center rounded-medio bg-superficie-hundida px-4 text-texto-deshabilitado texto-etiqueta"
+              aria-describedby="whatsapp-ayuda"
+            >
+              Pedir por WhatsApp
+            </button>
+          </>
+        )}
       </div>
     </div>
   </div>

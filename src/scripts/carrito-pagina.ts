@@ -1,5 +1,6 @@
 /**
- * La página /carrito: lista, cantidad y quitar. No arma el mensaje de WhatsApp.
+ * La página /carrito: lista, cantidad, quitar y el link del pedido.
+ * Abrir WhatsApp no vacía el carrito: la venta se cierra allá.
  */
 
 import {
@@ -12,6 +13,7 @@ import {
   type CartItem,
 } from '../lib/carrito.ts'
 import { formatArs } from '../lib/stock.ts'
+import { orderMessage, whatsappLink } from '../lib/whatsapp.ts'
 import { readCart, writeCart } from './carrito-ui.ts'
 
 function paso(kind: 'bajar' | 'subir', glyph: string, label: string, off: boolean): HTMLButtonElement {
@@ -107,6 +109,7 @@ export function initPaginaCarrito(): void {
   const lista = root.querySelector<HTMLElement>('[data-lista]')
   const total = root.querySelector<HTMLElement>('[data-total]')
   const barra = document.querySelector<HTMLElement>('[data-carrito-barra]')
+  const pedido = document.querySelector<HTMLAnchorElement>('[data-whatsapp-pedido]')
   if (!vacio || !lleno || !lista || !total) return
 
   function pintar(): void {
@@ -117,6 +120,10 @@ export function initPaginaCarrito(): void {
     if (barra) barra.hidden = !hay
     total.textContent = formatArs(totalPrice(cart))
     lista.replaceChildren(...cart.items.map((item) => fila(item)))
+    if (pedido && barra && hay) {
+      const href = whatsappLink(barra.dataset.whatsapp, orderMessage(barra.dataset.tienda ?? 'Tienda', cart))
+      if (href) pedido.href = href
+    }
   }
 
   lista.addEventListener('click', (event) => {
