@@ -2,6 +2,7 @@
 
 ## 2026-11-18
 
+- El carrito muestra el subtotal de la línea cuando hay más de una unidad, y quedan el favicon, los títulos y la guía de datos.
 - El carrito arma el pedido y abre WhatsApp; si la tienda no cargó el número, el botón queda deshabilitado.
 - El carrito queda guardado en el navegador: aviso al agregar, contador y página para revisar el pedido. WhatsApp sigue para después.
 - La ficha elige talle y color según el stock; el botón avisa y todavía no arma el carrito.

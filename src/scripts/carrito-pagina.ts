@@ -5,6 +5,7 @@
 
 import {
   CART_KEY,
+  linePrice,
   quedaUnoTexto,
   removeItem,
   setQuantity,
@@ -80,9 +81,19 @@ function fila(item: CartItem): HTMLLIElement {
   )
   caja.setAttribute('aria-label', `Cantidad de ${item.name}`)
 
-  const precio = document.createElement('p')
-  precio.className = 'texto-precio text-texto'
-  precio.textContent = formatArs(item.unitPrice)
+  const montos = linePrice(item)
+  const precio = document.createElement('div')
+  precio.className = 'flex flex-col items-end'
+  const principal = document.createElement('p')
+  principal.className = 'texto-precio text-texto'
+  principal.textContent = montos.main
+  precio.append(principal)
+  if (montos.each) {
+    const cada = document.createElement('p')
+    cada.className = 'texto-cuerpo-chico text-texto-secundario'
+    cada.textContent = montos.each
+    precio.append(cada)
+  }
 
   const controles = document.createElement('div')
   controles.className = 'flex items-center justify-between gap-3'

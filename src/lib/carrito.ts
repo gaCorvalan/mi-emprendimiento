@@ -2,8 +2,10 @@
  * Carrito guardado en el navegador. Sin red ni Astro.
  * La clave versionada es `carrito:v1`. Si lo guardado no se puede leer, queda vacío.
  * El tope es el stock de la variante en el momento de agregar: el sitio estático
- * no vuelve a preguntarle al CMS.
+ * no vuelve a preguntarle al CMS. El peso en pesos sale de `stock.ts`.
  */
+
+import { formatArs } from './stock.ts'
 
 export const CART_KEY = 'carrito:v1'
 
@@ -73,6 +75,23 @@ export function totalUnits(cart: Cart): number {
 
 export function totalPrice(cart: Cart): number {
   return cart.items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0)
+}
+
+export interface LinePriceView {
+  /** Subtotal de la línea. Con una unidad coincide con el precio unitario. */
+  main: string
+  /** Precio por unidad, solo si hay más de una. */
+  each: string | null
+}
+
+/**
+ * Precio de una línea en /carrito.
+ * El número grande es el subtotal, el mismo que arma el mensaje de WhatsApp.
+ */
+export function linePrice(item: Pick<CartItem, 'unitPrice' | 'quantity'>): LinePriceView {
+  const main = formatArs(item.unitPrice * item.quantity)
+  if (item.quantity <= 1) return { main, each: null }
+  return { main, each: `${formatArs(item.unitPrice)} c/u` }
 }
 
 function whole(value: number): number {
