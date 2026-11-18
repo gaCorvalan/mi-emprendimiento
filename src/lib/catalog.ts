@@ -19,6 +19,20 @@ export interface CardView {
 }
 
 /**
+ * Precio que muestra la tarjeta: el menor entre las variantes.
+ * Si no hay variantes, es el `base_price`. Un 0 de la variante cuenta.
+ */
+export function cardPrice(product: StockProduct): number {
+  if (product.product_variants.length === 0) return product.base_price
+  let lowest = variantPrice(product, product.product_variants[0])
+  for (const variant of product.product_variants) {
+    const amount = variantPrice(product, variant)
+    if (amount < lowest) lowest = amount
+  }
+  return lowest
+}
+
+/**
  * Etiqueta de la tarjeta. La palabra sale del estado; el color no alcanza.
  * `disponible` no lleva etiqueta. Pieza única gana, igual que en productStatus.
  */
@@ -30,11 +44,8 @@ export function cardView(product: StockProduct): CardView {
     : status === 'sin-stock' ? 'SIN STOCK'
     : null
 
-  const amounts = product.product_variants.length > 0
-    ? product.product_variants.map((variant) => variantPrice(product, variant))
-    : [product.base_price]
-  const lowest = Math.min(...amounts)
-  const differ = amounts.some((amount) => amount !== lowest)
+  const lowest = cardPrice(product)
+  const differ = product.product_variants.some((variant) => variantPrice(product, variant) !== lowest)
 
   return {
     label,
