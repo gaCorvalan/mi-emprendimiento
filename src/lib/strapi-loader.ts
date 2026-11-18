@@ -1,9 +1,18 @@
 /**
  * Loader de Content Layer para el catálogo de Strapi 5.
  * Los tipos de cada entrada salen de los schemas Zod en `src/content.config.ts`.
+ *
+ * Las colecciones piden las relaciones por nombre (`populate[product_variants]`,
+ * no `populate=*`). El tipo único Tienda no trae paginación: si no está
+ * publicado, el build sigue sin esa entrada.
  */
 
 const PAGE_SIZE = 25
+
+export interface StrapiLoaderOptions {
+  /** Relaciones de primer nivel. Cada una sale como `populate[clave]=true`. */
+  populate: readonly string[]
+}
 
 interface StrapiPagination {
   page: number
@@ -54,13 +63,40 @@ function prefixRelativeMedia(entry: Record<string, unknown>, strapiUrl: string) 
   }
 }
 
+export function strapiBaseUrl(): string {
+  let fromAstro: string | undefined
+  try {
+    const value = import.meta.env.STRAPI_URL
+    if (typeof value === 'string' && value) fromAstro = value
+  } catch {
+    fromAstro = undefined
+  }
+  const configured = fromAstro || process.env.STRAPI_URL || 'http://localhost:1337'
+  return configured.replace(/\/$/, '')
+}
+
+function toEntry(item: { id: number | string } & Record<string, unknown>, strapiUrl: string) {
+  const { id, ...rest } = item
+  prefixRelativeMedia(rest, strapiUrl)
+  return {
+    id: String(id),
+    ...rest,
+  }
+}
+
+function applyPopulate(params: URLSearchParams, populate: readonly string[]) {
+  for (const key of populate) {
+    params.set(`populate[${key}]`, 'true')
+  }
+}
+
 /**
  * Trae todas las páginas de un content-type. Strapi corta en 25 si no se pide
  * la página siguiente, así que un catálogo más grande se perdería en el build.
  */
-export function strapiLoader(endpoint: string) {
+export function strapiLoader(endpoint: string, options: StrapiLoaderOptions) {
   return async () => {
-    const baseUrl = (import.meta.env.STRAPI_URL || 'http://localhost:1337').replace(/\/$/, '')
+    const baseUrl = strapiBaseUrl()
     const items: Array<Record<string, unknown> & { id: string }> = []
     let page = 1
     let pageCount = 1
@@ -69,10 +105,10 @@ export function strapiLoader(endpoint: string) {
     try {
       do {
         const params = new URLSearchParams({
-          populate: '*',
           'pagination[page]': String(page),
           'pagination[pageSize]': String(PAGE_SIZE),
         })
+        applyPopulate(params, options.populate)
         const url = `${baseUrl}/api/${endpoint}?${params}`
 
         console.log(`[StrapiLoader] Fetching: ${url}`)
@@ -103,12 +139,7 @@ export function strapiLoader(endpoint: string) {
           if (!isEntry(item)) {
             throw new Error(`Invalid Strapi entry in ${url}: missing id`)
           }
-          const { id, ...rest } = item
-          prefixRelativeMedia(rest, baseUrl)
-          items.push({
-            id: String(id),
-            ...rest,
-          })
+          items.push(toEntry(item, baseUrl))
         }
 
         pageCount = pagination.pageCount
@@ -125,6 +156,59 @@ export function strapiLoader(endpoint: string) {
       return items
     } catch (error) {
       console.error(`[StrapiLoader] Error loading ${endpoint}:`, error)
+
+      if (error instanceof Error) {
+        throw new Error(`Failed to load ${endpoint} from Strapi: ${error.message}`)
+      }
+      throw new Error(`Failed to load ${endpoint} from Strapi: Unknown error`)
+    }
+  }
+}
+
+/**
+ * Tipo único de Strapi (`GET /api/tienda`). No tiene paginación ni `findOne`.
+ * `data: null` o un 404 (todavía no publicado) dejan la colección vacía:
+ * el whatsapp nulo, si la entrada existe, no es un error.
+ */
+export function strapiSingleLoader(endpoint: string) {
+  return async () => {
+    const baseUrl = strapiBaseUrl()
+    const url = `${baseUrl}/api/${endpoint}`
+
+    try {
+      console.log(`[StrapiLoader] Fetching single type: ${url}`)
+      const response = await fetch(url)
+
+      if (response.status === 404) {
+        console.warn(`[StrapiLoader] Single type ${endpoint} is not published. Continuing without it.`)
+        return []
+      }
+
+      if (!response.ok) {
+        throw new Error(`HTTP Error: ${response.status} ${response.statusText} for ${url}`)
+      }
+
+      let body: { data?: unknown }
+      try {
+        body = await response.json()
+      } catch (parseError) {
+        throw new Error(`JSON Parse Error for ${url}: ${parseError}`)
+      }
+
+      if (body.data == null) {
+        console.warn(`[StrapiLoader] Single type ${endpoint} has no published entry. Continuing without it.`)
+        return []
+      }
+
+      if (!isEntry(body.data)) {
+        throw new Error(`Invalid Strapi single type ${url}: missing id`)
+      }
+
+      const entry = toEntry(body.data, baseUrl)
+      console.log(`[StrapiLoader] Successfully fetched single type ${endpoint}`)
+      return [entry]
+    } catch (error) {
+      console.error(`[StrapiLoader] Error loading single type ${endpoint}:`, error)
 
       if (error instanceof Error) {
         throw new Error(`Failed to load ${endpoint} from Strapi: ${error.message}`)
