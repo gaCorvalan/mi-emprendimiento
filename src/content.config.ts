@@ -1,11 +1,11 @@
 import { defineCollection } from 'astro:content'
 import { z } from 'astro/zod'
-import { strapiLoader } from './lib/strapi-loader'
+import { strapiLoader, strapiSingleLoader } from './lib/strapi-loader'
 
 // ===== SCHEMAS ZOD =====
 
-// Schema para productos transformados (después de strapiLoader)
-// Basado en la estructura REAL de Strapi v5 con populate=*
+// Schema para productos transformados (después de strapiLoader).
+// Campos confirmados contra GET /api/products con populate explícito.
 const productSchema = z.object({
   // ID transformado por strapiLoader
   id: z.string(),
@@ -18,6 +18,7 @@ const productSchema = z.object({
   base_price: z.number(),
   featured: z.boolean(),
   active: z.boolean(),
+  pieza_unica: z.boolean(),
   
   // Campos adicionales de Strapi
   meta_title: z.string().nullable(),
@@ -140,9 +141,10 @@ const productSchema = z.object({
     documentId: z.string(),
     size: z.string(),
     color: z.string(),
+    color_hex: z.string().regex(/^#[0-9A-Fa-f]{6}$/).nullable(),
     material_variant: z.string().nullable(),
     price: z.number().nullable(),
-    stock_quantity: z.number().nullable(),
+    stock_quantity: z.number().int().nonnegative(),
     low_stock_threshold: z.number().nullable(),
     weight: z.string().nullable(),
     active: z.boolean().nullable(),
@@ -281,6 +283,24 @@ const categorySchema = z.object({
     publishedAt: z.string()
   }).nullable(),
   
+  products: z.array(z.object({
+    id: z.number(),
+    documentId: z.string(),
+    name: z.string(),
+    slug: z.string(),
+    description: z.string(),
+    base_price: z.number(),
+    featured: z.boolean(),
+    active: z.boolean(),
+    pieza_unica: z.boolean(),
+    meta_title: z.string().nullable(),
+    age_range: z.string().nullable(),
+    material: z.string().nullable(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+    publishedAt: z.string().nullable(),
+  })),
+
   // Relaciones adicionales encontradas en la respuesta
   subcategories: z.array(z.unknown()),
   category: z.unknown().nullable(),
@@ -308,17 +328,39 @@ export type Product = z.infer<typeof productSchema>
 /** Categoría ya pasada por el loader y validada. Reemplaza los tipos de Strapi v4. */
 export type Category = z.infer<typeof categorySchema>
 
+const tiendaSchema = z.object({
+  id: z.string(),
+  documentId: z.string(),
+  nombre: z.string(),
+  whatsapp: z.string().regex(/^[0-9]{8,15}$/).nullable(),
+  texto_envio: z.string(),
+  moneda: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  publishedAt: z.string().nullable(),
+})
+
+/** Datos de la tienda (tipo único). whatsapp puede ser null. */
+export type Tienda = z.infer<typeof tiendaSchema>
+
 const collections = {
-  // Collection estática para productos (SEO y static generation)
   'products-seo': defineCollection({
-    loader: strapiLoader('products'),
+    loader: strapiLoader('products', {
+      populate: ['image', 'categories', 'product_variants', 'product_sets'],
+    }),
     schema: productSchema
   }),
-  
-  // Collection estática para categorías (navegación y filtrado)
+
   categories: defineCollection({
-    loader: strapiLoader('categories'),
+    loader: strapiLoader('categories', {
+      populate: ['image', 'products', 'subcategories', 'category', 'product_sets'],
+    }),
     schema: categorySchema
+  }),
+
+  tienda: defineCollection({
+    loader: strapiSingleLoader('tienda'),
+    schema: tiendaSchema
   })
 }
 

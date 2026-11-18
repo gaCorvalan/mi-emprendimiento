@@ -1,4 +1,5 @@
 ---
+import { getCollection } from 'astro:content'
 import '../styles/global.css'
 
 interface Props {
@@ -8,8 +9,8 @@ interface Props {
 
 const { title, description } = Astro.props
 
-// Texto fijo. El próximo PR lo reemplaza por el nombre de la Tienda del CMS.
-const nombreTienda = 'Mini Gonzi'
+const tienda = (await getCollection('tienda'))[0]?.data
+const nombreTienda = tienda?.nombre.trim() || 'Tienda'
 ---
 
 <!doctype html>

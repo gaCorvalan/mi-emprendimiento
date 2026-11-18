@@ -17,6 +17,9 @@ export async function getStaticPaths() {
 
 const { product } = Astro.props
 
+const tienda = (await getCollection('tienda'))[0]?.data
+const textoEnvio = tienda?.texto_envio.trim() || 'A coordinar'
+
 const imageUrl =
   product.image?.formats?.large?.url
   ?? product.image?.formats?.medium?.url
@@ -135,7 +138,7 @@ const jsonLd = {
             Comprar
           </button>
           <p id="add-to-cart-description" class="texto-cuerpo text-texto-secundario text-center">
-            Envío gratis en compras mayores a $50.000
+            {textoEnvio}
           </p>
         </div>
       </div>

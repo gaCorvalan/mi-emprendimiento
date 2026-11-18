@@ -8,10 +8,11 @@ El CMS es otro proyecto, [gonzi-store-cms](https://github.com/gaCorvalan/gonzi-s
 
 `src/lib/strapi-loader.ts` pide, en el momento del build (o al levantar el dev server):
 
-- `GET {STRAPI_URL}/api/products?populate=*`
-- `GET {STRAPI_URL}/api/categories?populate=*`
+- `GET {STRAPI_URL}/api/products` con `populate` explícito de `image`, `categories`, `product_variants` y `product_sets` (la clave de variantes es `product_variants`)
+- `GET {STRAPI_URL}/api/categories` con `populate` explícito de `image`, `products`, `subcategories`, `category` y `product_sets`
+- `GET {STRAPI_URL}/api/tienda` (tipo único: nombre, whatsapp, texto de envío, moneda)
 
-Strapi manda de a 25. El loader sigue de página en página hasta bajar el catálogo entero. Esos datos alimentan las colecciones de Astro `products-seo` y `categories`. Con eso se generan el inicio y una página por producto en `/productos/[slug]`.
+Strapi manda las colecciones de a 25. El loader sigue de página en página hasta bajar el catálogo entero. Esos datos alimentan las colecciones de Astro `products-seo`, `categories` y `tienda`. Con eso se generan el inicio y una página por producto en `/productos/[slug]`. Si la Tienda no está publicada, el build sigue y el encabezado usa el nombre «Tienda». Un whatsapp vacío no corta el build.
 
 ## Qué necesitás
 
@@ -31,7 +32,7 @@ npm run develop
 
 La API queda en `http://localhost:1337`. La primera vez, en `http://localhost:1337/admin`, Strapi te pide crear el administrador.
 
-El permiso de lectura pública sale solo al arrancar el CMS: el rol Public puede hacer `find` y `findOne` de productos, categorías, variantes y conjuntos. No hace falta marcarlo a mano.
+El permiso de lectura pública sale solo al arrancar el CMS: el rol Public puede hacer `find` y `findOne` de productos, categorías, variantes y conjuntos, y `find` de la Tienda. No hace falta marcarlo a mano.
 
 ## Variables de entorno
 
@@ -49,6 +50,7 @@ Podés exportarlas en la terminal o ponerlas en un `.env` en esta carpeta (no lo
 nvm use
 npm ci
 npm run dev
+npm test
 ```
 
 El dev server abre en `http://localhost:4321`.
@@ -71,7 +73,9 @@ SITE_URL=https://minigonzi.com.ar npm run build
 - El inicio lista los productos publicados, con el nombre que cargaste en el CMS.
 - Cada producto tiene su ficha en `/productos/[slug]`: nombre, precio, descripción y datos para buscadores (JSON-LD).
 - Si un producto no tiene imagen, la tarjeta y la ficha muestran un recuadro con la inicial. No se publica `og:image` vacío ni un `img` sin `src`.
-- El build baja productos y categorías, todas las páginas.
+- El build baja productos, categorías y la Tienda.
+- El encabezado muestra el nombre de la Tienda. El texto de envío de la ficha sale de ahí (por defecto, «A coordinar»).
+- `npm test` cubre el stock y el precio en pesos (`src/lib/stock.ts`). La vidriera todavía no elige talle ni color.
 
 ## Qué falta
 
