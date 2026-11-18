@@ -5,6 +5,7 @@ import Catalogo from '../components/Catalogo.astro'
 import { pageSlice } from '../lib/catalog'
 
 const productos = await getCollection('products-seo')
+const categorias = await getCollection('categories')
 const slice = pageSlice(productos, 1)
 const nombre = (await getCollection('tienda'))[0]?.data.nombre.trim() || 'Tienda'
 ---
@@ -12,6 +13,8 @@ const nombre = (await getCollection('tienda'))[0]?.data.nombre.trim() || 'Tienda
 <Base title={nombre} description={`Catálogo de ${nombre}.`}>
   <Catalogo
     products={slice.data.map((entry) => entry.data)}
+    catalog={productos.map((entry) => entry.data)}
+    categories={categorias.map((entry) => entry.data)}
     shown={slice.shown}
     total={slice.total}
     currentPage={slice.currentPage}

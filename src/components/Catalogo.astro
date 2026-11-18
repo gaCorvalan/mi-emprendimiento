@@ -1,52 +1,195 @@
 ---
-import type { Product } from '../content.config'
+import type { Category, Product } from '../content.config'
 import ProductCard from './ProductCard.astro'
 import { catalogPagePath, prendasLabel, showingLabel } from '../lib/catalog'
+import { categoryChoices, toCatalogItem } from '../lib/filters'
 
 interface Props {
   products: Product[]
+  catalog: Product[]
+  categories: Category[]
   shown: number
   total: number
   currentPage: number
   lastPage: number
 }
 
-const { products, shown, total, currentPage, lastPage } = Astro.props
+const { products, catalog, categories, shown, total, currentPage, lastPage } = Astro.props
 const prev = currentPage > 1 ? catalogPagePath(currentPage - 1) : undefined
 const next = currentPage < lastPage ? catalogPagePath(currentPage + 1) : undefined
+
+const datosJson = JSON.stringify({
+  items: catalog.map((product) => toCatalogItem(product)),
+  categories: categoryChoices(categories),
+}).replace(/</g, '\\u003c')
 ---
 
-<section class="flex flex-col gap-3 py-3">
-  <p class="texto-cuerpo-chico text-texto-secundario">{prendasLabel(total)}</p>
+<div class="flex flex-col gap-3 pt-3 pb-28" data-catalogo>
+  <form role="search" data-buscar-form>
+    <label for="buscar-prendas" class="sr-only">Buscar prendas</label>
+    <div class="relative">
+      <svg
+        class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-texto-secundario"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+      >
+        <circle cx="11" cy="11" r="6.25" stroke="currentColor" stroke-width="1.8"></circle>
+        <path d="M16 16L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+      </svg>
+      <input
+        id="buscar-prendas"
+        name="q"
+        type="search"
+        placeholder="Buscar prendas"
+        autocomplete="off"
+        autocapitalize="off"
+        data-buscar
+        class="h-minimo w-full rounded-medio border border-borde-control bg-superficie pl-10 pr-3 text-texto placeholder:text-texto-secundario"
+      />
+    </div>
+  </form>
 
-  {total > 0 && (
-    <ul class="grid list-none grid-cols-2 gap-4 p-0">
-      {products.map((product) => (
-        <li class="min-w-0">
-          <ProductCard product={product} />
-        </li>
-      ))}
-    </ul>
-  )}
+  <div data-chips hidden>
+    <div data-chips-lista class="flex flex-wrap items-center gap-2"></div>
+  </div>
 
-  {total > 0 && (
-    <p class="texto-cuerpo-chico text-center text-texto-secundario">
-      {showingLabel(shown, total)}
-    </p>
-  )}
+  <div data-servidor>
+    <div class="flex flex-col gap-3">
+      <p class="texto-cuerpo-chico text-texto-secundario">{prendasLabel(total)}</p>
 
-  {(prev || next) && (
-    <nav class="flex items-center justify-center gap-4" aria-label="Paginación">
-      {prev && (
-        <a href={prev} class="inline-flex min-h-minimo items-center px-3 texto-cuerpo text-texto no-underline">
-          Anterior
-        </a>
+      {total > 0 && (
+        <ul class="grid list-none grid-cols-2 gap-4 p-0">
+          {products.map((product) => (
+            <li class="min-w-0">
+              <ProductCard product={product} />
+            </li>
+          ))}
+        </ul>
       )}
-      {next && (
-        <a href={next} class="inline-flex min-h-minimo items-center px-3 texto-cuerpo text-texto no-underline">
-          Siguiente
-        </a>
+
+      {total > 0 && (
+        <p class="texto-cuerpo-chico text-center text-texto-secundario">
+          {showingLabel(shown, total)}
+        </p>
       )}
-    </nav>
-  )}
-</section>
+
+      {(prev || next) && (
+        <nav class="flex items-center justify-center gap-4" aria-label="Paginación">
+          {prev && (
+            <a href={prev} class="inline-flex min-h-minimo items-center px-3 texto-cuerpo text-texto no-underline">
+              Anterior
+            </a>
+          )}
+          {next && (
+            <a href={next} class="inline-flex min-h-minimo items-center px-3 texto-cuerpo text-texto no-underline">
+              Siguiente
+            </a>
+          )}
+        </nav>
+      )}
+    </div>
+  </div>
+
+  <div data-cliente hidden>
+    <div class="flex flex-col gap-3">
+      <p data-cuenta class="texto-cuerpo-chico text-texto-secundario" aria-live="polite"></p>
+      <div data-grilla-wrap>
+        <ul data-grilla class="grid list-none grid-cols-2 gap-4 p-0"></ul>
+      </div>
+      <div data-vacio hidden>
+        <div class="flex flex-col items-start gap-3 py-6" role="status">
+          <p class="texto-titulo text-texto">Sin resultados</p>
+          <p class="texto-cuerpo text-texto-secundario">Probá con otras palabras o sacá algún filtro.</p>
+          <button
+            type="button"
+            data-limpiar-todo
+            class="inline-flex min-h-minimo items-center rounded-medio bg-acento px-4 text-acento-texto texto-etiqueta"
+          >
+            Limpiar filtros
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pointer-events-none fixed inset-x-0 bottom-0 z-30">
+    <div class="contenedor pointer-events-auto pb-4">
+      <button
+        type="button"
+        data-abrir
+        class="flex min-h-cta w-full items-center justify-center rounded-medio bg-acento px-4 text-acento-texto texto-etiqueta shadow-2"
+        aria-expanded="false"
+        aria-controls="catalogo-dialog"
+      >
+        Filtrar y ordenar
+      </button>
+    </div>
+  </div>
+
+  <div data-panel hidden>
+    <div class="fixed inset-0 z-40 flex items-end">
+      <button
+        type="button"
+        data-fondo
+        class="absolute inset-0 bg-texto/40"
+        aria-label="Cerrar filtros"
+        tabindex="-1"
+      ></button>
+      <div
+        id="catalogo-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="catalogo-panel-titulo"
+        class="relative flex max-h-[85%] w-full flex-col overflow-hidden rounded-t-grande bg-superficie shadow-2"
+      >
+        <div class="flex shrink-0 items-center justify-between gap-3 px-4 pt-3">
+          <p id="catalogo-panel-titulo" class="texto-subtitulo text-texto">Filtrar y ordenar</p>
+          <button
+            type="button"
+            data-cerrar
+            class="inline-flex size-minimo shrink-0 items-center justify-center text-texto"
+            aria-label="Cerrar"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M6 6L18 18M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+            </svg>
+          </button>
+        </div>
+        <div data-opciones class="flex min-h-0 flex-col gap-6 overflow-y-auto px-4 py-4"></div>
+        <div class="flex shrink-0 gap-3 border-t border-borde px-4 py-4">
+          <button
+            type="button"
+            data-limpiar-panel
+            class="inline-flex min-h-minimo shrink-0 items-center justify-center rounded-medio border border-borde-control bg-superficie px-4 texto-etiqueta text-texto"
+          >
+            Limpiar
+          </button>
+          <button
+            type="button"
+            data-aplicar
+            class="inline-flex min-h-minimo flex-1 items-center justify-center rounded-medio bg-acento px-4 text-acento-texto texto-etiqueta"
+          >
+            Ver
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <template data-tarjetas>
+    {catalog.map((product) => (
+      <div data-slug={product.slug}>
+        <ProductCard product={product} />
+      </div>
+    ))}
+  </template>
+
+  <script id="catalogo-datos" type="application/json" is:inline set:html={datosJson}></script>
+  <script>
+    import { initCatalogo } from '../scripts/catalogo-ui.ts'
+    initCatalogo()
+  </script>
+</div>

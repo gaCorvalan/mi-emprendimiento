@@ -13,12 +13,16 @@ export async function getStaticPaths({ paginate }) {
 }
 
 const { page } = Astro.props
+const productos = await getCollection('products-seo')
+const categorias = await getCollection('categories')
 const nombre = (await getCollection('tienda'))[0]?.data.nombre.trim() || 'Tienda'
 ---
 
 <Base title={`${nombre} — página ${page.currentPage}`} description={`Catálogo de ${nombre}.`}>
   <Catalogo
     products={page.data.map((entry) => entry.data)}
+    catalog={productos.map((entry) => entry.data)}
+    categories={categorias.map((entry) => entry.data)}
     shown={page.data.length}
     total={page.total}
     currentPage={page.currentPage}
