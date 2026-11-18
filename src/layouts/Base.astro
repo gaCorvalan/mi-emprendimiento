@@ -36,18 +36,48 @@ const nombreTienda = tienda?.nombre.trim() || 'Tienda'
         <a href="/" class="texto-titulo inline-flex min-h-minimo items-center text-texto no-underline">
           {nombreTienda}
         </a>
-        <button type="button" class="inline-flex size-minimo shrink-0 items-center justify-center text-texto" aria-label="Carrito">
+        <a
+          href="/carrito"
+          data-carrito-enlace
+          class="relative inline-flex size-minimo shrink-0 items-center justify-center text-texto no-underline"
+          aria-label="Carrito"
+        >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M6 6H21L19.6 15H7.2L6 6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
             <path d="M9 21.3C9.71797 21.3 10.3 20.718 10.3 20C10.3 19.282 9.71797 18.7 9 18.7C8.28203 18.7 7.7 19.282 7.7 20C7.7 20.718 8.28203 21.3 9 21.3Z" fill="currentColor"></path>
             <path d="M18 21.3C18.718 21.3 19.3 20.718 19.3 20C19.3 19.282 18.718 18.7 18 18.7C17.282 18.7 16.7 19.282 16.7 20C16.7 20.718 17.282 21.3 18 21.3Z" fill="currentColor"></path>
             <path d="M6 6L5 3H2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
           </svg>
-        </button>
+          <span
+            data-carrito-cuenta
+            class="absolute top-1 right-1 hidden h-[18px] min-w-[18px] items-center justify-center rounded-pastilla bg-acento px-1 text-acento-texto texto-etiqueta-chica tabular-nums"
+            aria-hidden="true"
+          ></span>
+        </a>
       </div>
     </header>
     <main id="main-content" class="contenedor">
       <slot />
     </main>
+    <div class="pointer-events-none fixed inset-x-0 bottom-4 z-40" data-aviso-carrito hidden>
+      <div class="contenedor pointer-events-auto">
+        <div
+          role="status"
+          class="flex items-center gap-3 rounded-medio border border-borde bg-acento-suave py-2 pl-4 pr-2 shadow-2"
+        >
+          <p class="flex-1 texto-etiqueta text-texto">Agregado al carrito</p>
+          <a
+            href="/carrito"
+            class="inline-flex min-h-minimo items-center px-3 texto-etiqueta text-acento no-underline"
+          >
+            Ver carrito
+          </a>
+        </div>
+      </div>
+    </div>
+    <script>
+      import { initCarrito } from '../scripts/carrito-ui.ts'
+      initCarrito()
+    </script>
   </body>
 </html>
