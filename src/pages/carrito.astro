@@ -1,0 +1,64 @@
+---
+import { getCollection } from 'astro:content'
+import Base from '../layouts/Base.astro'
+
+const tienda = (await getCollection('tienda'))[0]?.data
+const nombre = tienda?.nombre.trim() || 'Tienda'
+const textoEnvio = tienda?.texto_envio.trim() || 'A coordinar'
+---
+
+<Base title={`Tu carrito - ${nombre}`} description={`Carrito de ${nombre}.`}>
+  <div class="flex flex-col gap-4 py-4 pb-40" data-carrito-pagina>
+    <a
+      href="/"
+      class="inline-flex min-h-minimo items-center self-start texto-etiqueta text-texto no-underline"
+    >
+      ‹ Seguir comprando
+    </a>
+    <h1 class="texto-titulo text-texto">Tu carrito</h1>
+
+    <div data-vacio hidden class="flex flex-col items-start gap-3">
+      <p class="texto-cuerpo text-texto">Tu carrito está vacío</p>
+      <a
+        href="/"
+        class="inline-flex min-h-cta w-full items-center justify-center rounded-medio bg-acento px-4 text-acento-texto texto-etiqueta no-underline"
+      >
+        Ver prendas
+      </a>
+    </div>
+
+    <div data-lleno hidden>
+      <ul data-lista class="m-0 flex list-none flex-col p-0"></ul>
+      <div class="mt-4 flex flex-col gap-2">
+        <p class="texto-cuerpo text-texto-secundario">Envío: {textoEnvio}</p>
+        <div class="flex items-baseline justify-between gap-4">
+          <p class="texto-precio text-texto">Total</p>
+          <p class="texto-precio text-texto" data-total aria-live="polite"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pointer-events-none fixed inset-x-0 bottom-0 z-30" data-carrito-barra hidden>
+    <div class="pointer-events-auto bg-superficie shadow-2">
+      <div class="contenedor flex flex-col gap-2 pt-3 pb-5">
+        <p id="whatsapp-ayuda" class="text-center texto-cuerpo-chico text-texto-secundario">
+          El pedido por WhatsApp llega en el próximo paso.
+        </p>
+        <button
+          type="button"
+          disabled
+          class="inline-flex min-h-cta w-full items-center justify-center rounded-medio bg-acento px-4 text-acento-texto texto-etiqueta disabled:bg-superficie-hundida disabled:text-texto-deshabilitado"
+          aria-describedby="whatsapp-ayuda"
+        >
+          Pedir por WhatsApp
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    import { initPaginaCarrito } from '../scripts/carrito-pagina.ts'
+    initPaginaCarrito()
+  </script>
+</Base>

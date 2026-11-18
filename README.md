@@ -71,14 +71,15 @@ SITE_URL=https://minigonzi.com.ar npm run build
 ## Qué anda hoy
 
 - El inicio es el catálogo: grilla de dos columnas, nombre, precio y etiqueta de stock (pieza única, última unidad o sin stock). Si hay más de 24 prendas, sigue en `/pagina/2`. Arriba se puede buscar por nombre. «Filtrar y ordenar» abre categoría, talle, color y orden; la elección queda en la URL.
-- Cada producto tiene su ficha en `/productos/[slug]`: foto, precio, talle, color y cantidad. El botón dispara `agregar-al-carrito` y todavía no guarda el pedido. También hay datos para buscadores (JSON-LD).
+- Cada producto tiene su ficha en `/productos/[slug]`: foto, precio, talle, color y cantidad. «Agregar al carrito» guarda el pedido en el navegador y deja un aviso, sin salir de la ficha. También hay datos para buscadores (JSON-LD).
 - Si un producto no tiene imagen, la tarjeta y la ficha muestran un recuadro plano, sin letra. No se publica `og:image` vacío ni un `img` sin `src`.
 - El build baja productos, categorías y la Tienda.
-- El encabezado muestra el nombre de la Tienda. El texto de envío de la ficha sale de ahí (por defecto, «A coordinar»).
-- `npm test` cubre el stock, el precio en pesos (`src/lib/stock.ts`), la búsqueda y los filtros (`src/lib/filters.ts`) y la ficha (`src/lib/prenda.ts`).
+- El encabezado muestra el nombre de la Tienda y el carrito, con la cantidad de prendas. El texto de envío de la ficha y de `/carrito` sale de la Tienda (por defecto, «A coordinar»).
+- `/carrito` lista el pedido, deja cambiar cantidades y quitar. El botón de WhatsApp está a la vista y deshabilitado: el mensaje llega en el próximo paso. El stock del carrito es el de la variante al agregarla; no se vuelve a consultar.
+- `npm test` cubre el stock, el precio en pesos (`src/lib/stock.ts`), la búsqueda y los filtros (`src/lib/filters.ts`), la ficha (`src/lib/prenda.ts`) y el carrito (`src/lib/carrito.ts`).
 
 ## Qué falta
 
-- El botón «Agregar al carrito» no guarda el pedido. No hay carrito ni mensaje de WhatsApp.
+- El botón «Pedir por WhatsApp» no arma el mensaje.
 - No hay página de categoría ni listado aparte. Las categorías se usan para filtrar el catálogo.
 - No se muestran las promos. El catálogo sí muestra si es pieza única, última unidad o sin stock.

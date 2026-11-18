@@ -89,7 +89,11 @@ function swatchStyle(hex: string | null): string | undefined {
   return `background-color: ${hex}`
 }
 
-const datosJson = JSON.stringify(prenda).replace(/</g, '\\u003c')
+const datosJson = JSON.stringify({
+  ...prenda,
+  name: product.name,
+  imageUrl: photos[0] ?? null,
+}).replace(/</g, '\\u003c')
 
 const jsonLd = {
   '@context': 'https://schema.org/',
